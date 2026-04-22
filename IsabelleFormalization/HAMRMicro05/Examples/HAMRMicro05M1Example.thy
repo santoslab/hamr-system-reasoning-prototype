@@ -439,8 +439,9 @@ definition RID_AC1B_End_SysAssert :: "int SystemAssert"
 
 text \<open>
 RID_AC2 System Assertion:
-  ch a != ch b
   ch a1 != ch b1
+  ch a = ch b1
+  ch b = ch a1
 \<close>
 
 definition RID_AC2_SysAssert :: "int SystemAssert"
@@ -451,6 +452,8 @@ definition RID_AC2_SysAssert :: "int SystemAssert"
 text \<open>
 END System Assertion:
   ch a1 != ch b1
+  ch a1 = ch a
+  ch b1 = ch b
 \<close>
 
 definition END_SysAssert :: "int SystemAssert"

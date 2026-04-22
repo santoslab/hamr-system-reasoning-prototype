@@ -445,7 +445,8 @@ RID_AC2 System Assertion:
 
 definition RID_AC2_SysAssert :: "int SystemAssert"
   where "RID_AC2_SysAssert tst chst \<equiv> (chst $ ''a1'' \<noteq> chst $ ''b1'')
-                                   \<and> (chst $ ''a'' \<noteq> chst $ ''b'')"
+                                   \<and> (chst $ ''a'' = chst $ ''b1'')
+                                   \<and> (chst $ ''b'' = chst $ ''a1'')"
 
 text \<open>
 END System Assertion:
@@ -453,7 +454,9 @@ END System Assertion:
 \<close>
 
 definition END_SysAssert :: "int SystemAssert"
-  where "END_SysAssert tst chst \<equiv> (chst $ ''a1'' \<noteq> chst $ ''b1'')"
+  where "END_SysAssert tst chst \<equiv> (chst $ ''a1'' \<noteq> chst $ ''b1'')
+                                   \<and> (chst $ ''a1'' = chst $ ''a'')
+                                   \<and> (chst $ ''b1'' = chst $ ''b'')"
 
 definition M1_System_Spec :: "int SystemSpec"
   where "M1_System_Spec \<equiv> \<lparr>
