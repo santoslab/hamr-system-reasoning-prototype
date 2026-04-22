@@ -721,12 +721,6 @@ lemma wf_wrf: "wf_WriteFrame RegSystem RegModel Reg_writFrame"
 
 text "Complete Contract"
 
-(* Contract conformance cannot be effectively checked with this version of the framework
-   as the regulator is part of a larger system and therefore is not self-repeating
-  
-   To see the proof for the regulator checkout the Acyclic version of the framework in
-   HAMRMicro05Acyclic *)
-
 lemma "ContractConformanceVCs RegSystem RegModel RegTaskContracts Reg_System_Spec Reg_MHIP Reg_writFrame"
   (* Clean Up Input For Contracts*)
   apply (simp add: ContractConformanceVCs_def Reg_System_Spec_wf Reg_TaskContracts_wf Reg_MHIP_wf Reg_MHIP_ind wf_wrf)

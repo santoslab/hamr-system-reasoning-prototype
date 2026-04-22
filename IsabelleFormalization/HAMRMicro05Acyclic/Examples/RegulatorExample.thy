@@ -2,8 +2,6 @@ theory RegulatorExample
   imports "../HAMRMicro05ExecutionSemantics" "../HAMRMicro05Model" "../HAMRMicro05Spec"
 begin
 
-(* THIS WILL NOT WORK WITH CYCLIC AS THIS ONLY A PART OF THE FULL SYSTEM *)
-
 section \<open>Channels\<close>
 
 text \<open>
@@ -445,14 +443,14 @@ lemma wf_RegModel: "wf_Model RegModel"
 
 lemma wf_M1System: "wf_System RegSystem RegModel"                                                                  
   by (auto simp add: Reg_simps wf_Model_simps wf_TaskDescrs_simps wf_System_simps initTid_def wf 
-                     wf_ChState_def card_gt_0_iff fcard_def scheduleReachBody_def 
-                     scheduleStepBody_def wf_System_NextRel_SourceAndSink_def)
+                     wf_ChState_def card_gt_0_iff fcard_def scheduleReachSet_def scheduleReach_def 
+                     scheduleStep_def wf_System_NextRel_SourceAndSink_def)
 
 lemma s1: "{s. s |\<subseteq>| {|0|} \<and> (s = {|0|} \<or> s = {|2|} \<or> s = {|3|} \<or> s = {|4|})} = {{|0|}}"
   by auto
 
 lemma wf_InitSystemState: "wf_SystemState RegModel RegSystem (initSystemState RegSystem)"
-  by (auto simp add: Reg_simps wf_Model_simps wf_TaskDescrs_simps wf_System_simps wf_SystemState_simps s1 scheduleReachBody_def wf_TaskState_def wf_ChState_def wf_VarState_dom_def)
+  by (auto simp add: Reg_simps wf_Model_simps wf_TaskDescrs_simps wf_System_simps wf_SystemState_simps s1 scheduleReach_def wf_TaskState_def wf_ChState_def wf_VarState_dom_def)
 
 subsection TaskContracts
 
@@ -468,6 +466,7 @@ text \<open>Admin properly logs
         . ''lower_desired_tempWstatus''
         . ''current_tempWstatus''
         . ''regulator_mode''\<close>
+
 definition RegAdminPost :: "int TaskPost"
   where "RegAdminPost tsPre csPre tsPost csPost \<equiv> (csPost $ ''upper_desired_tempWstatus_ad'') = (csPre $ ''upper_desired_tempWstatus'')
                                                   \<and> (csPost $ ''lower_desired_tempWstatus_ad'') = (csPre $ ''lower_desired_tempWstatus'')
@@ -488,7 +487,6 @@ text \<open>
   Case 1: if PRE ''regulator_mode'' = 1 then POST ''display_temp'' = PRE ''current_tempWstatus_ad''
   Case 2: if PRE ''regulator_mode'' \<noteq> 1 then POST ''display_temp'' = PRE ''display_temp''
 \<close>
-
 definition RegMRIPost :: "int TaskPost"
   where "RegMRIPost tsPre csPre tsPost csPost \<equiv> csPost $ ''upper_desired_temp'' = (csPre $ ''upper_desired_tempWstatus_ad'')
                                                 \<and> csPost $ ''lower_desired_temp'' = (csPre $ ''lower_desired_tempWstatus_ad'')
@@ -720,12 +718,6 @@ lemma wf_wrf: "wf_WriteFrame RegSystem RegModel Reg_writFrame"
   by (auto simp add: Reg_simps)
 
 text "Complete Contract"
-
-(* Contract conformance cannot be effectively checked with this version of the framework
-   as the regulator is part of a larger system and therefore is not self-repeating
-  
-   To see the proof for the regulator checkout the Acyclic version of the framework in
-   HAMRMicro05Acyclic *)
 
 lemma "ContractConformanceVCs RegSystem RegModel RegTaskContracts Reg_System_Spec Reg_MHIP Reg_writFrame"
   (* Clean Up Input For Contracts*)
