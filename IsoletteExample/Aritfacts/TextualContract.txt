@@ -1,0 +1,120 @@
+Contract {
+	SysAssert {
+        Name: START_Assert,
+        Assert: True
+    },
+    SplitJoin {
+        Schema {
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: oi
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            }
+        },
+        Schema {
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: ts
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            }
+        }
+    },
+    SysAssert {
+        Name: ,
+        Assert: True
+    },
+    SplitJoin {
+        Schema {
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: drf
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: mrm
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: mri
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: mhs
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            }
+        },
+        Schema {
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: dmf
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: mmm
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: mmi
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            },
+            Component {
+                Name: ma
+            },
+            SysAssert {
+                Name: ,
+                Assert: True
+            }
+        }
+    }
+    SysAssert {
+        Name: ,
+        Assert: True
+    },
+    Component {
+        Name: hs
+    },
+    SysAssert {
+        Name: END_Assert,
+        Assert: True
+    }
+}
+
