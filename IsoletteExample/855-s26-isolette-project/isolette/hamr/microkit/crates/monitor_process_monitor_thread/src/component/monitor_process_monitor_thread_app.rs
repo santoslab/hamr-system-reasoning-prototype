@@ -140,6 +140,14 @@ verus! {
       let mmi_mmi_interface_failure = api.get_mmi_mmi_interface_failure();
       let mmm_mmm_monitor_mode = api.get_mmm_mmm_monitor_mode();
       let dmf_dmf_internal_failure = api.get_dmf_dmf_internal_failure();
+      
+      if self.prev_user_ch[idx] == 5 { // Following Manage Alarm
+        if sysProp_NormalModeAlarmOn(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, cpi_thermostat_current_tempWstatus, dmf_dmf_internal_failure, mmm_mmm_monitor_mode, ma_ma_alarm_control) {
+          log_info("[MONITOR] sysProp_NormalModeAlarmOn [PASSING]");
+        } else {
+          log_info("[MONITOR] sysProp_NormalModeAlarmOn [FAILED]");
+        }
+      }
 
       if self.prev_user_ch[idx] == 7 { // Following Manage Regulator Interface
         if sysProp_NormalDisplayTemp(mrm_mrm_regulator_mode, mri_mri_displayed_temp, cpi_thermostat_current_tempWstatus) {
@@ -149,7 +157,7 @@ verus! {
         }
       }
 
-      if self.prev_user_ch[idx] == 9 { // Manage Heat Source
+      if self.prev_user_ch[idx] == 9 { // Following Manage Heat Source
         if sysProp_NormalModeHeatOnn(mrm_mrm_regulator_mode, cpi_thermostat_current_tempWstatus, oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus, drf_drf_internal_failure, mhs_mhs_heat_control) {
           log_info("[REGULATOR] sysProp_NormalModeHeatOnn [PASSING]");
         } else {
@@ -167,36 +175,67 @@ verus! {
         } else {
           log_info("[REGULATOR] sysProp_InitModeHeatOff [FAILED]");
         }
-
-        if sysProp_InvalidCTNormalModeHeatOff(cpi_thermostat_current_tempWstatus, mrm_mrm_regulator_mode, mhs_mhs_heat_control) {
-          log_info("[REGULATOR] sysProp_InvalidCTNormalModeHeatOff [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_InvalidCTNormalModeHeatOff [FAILED]");
-        }
-
-        if sysProp_InvalidUDTNormalModeHeatOff(oip_oit_upper_desired_tempWstatus, mrm_mrm_regulator_mode, mhs_mhs_heat_control) {
-          log_info("[REGULATOR] sysProp_InvalidUDTNormalModeHeatOff [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_InvalidUDTNormalModeHeatOff [FAILED]");
-        }
-
-        if sysProp_InvalidLDTNormalModeHeatOff(oip_oit_lower_desired_tempWstatus, mrm_mrm_regulator_mode, mhs_mhs_heat_control) {
-          log_info("[REGULATOR] sysProp_InvalidLDTNormalModeHeatOff [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_InvalidLDTNormalModeHeatOff [FAILED]");
-        }
-
-        if sysProp_InteralFailureNormalModeHeatOff(drf_drf_internal_failure, mrm_mrm_regulator_mode, mhs_mhs_heat_control) {
-          log_info("[REGULATOR] sysProp_InteralFailureNormalModeHeatOff [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_InteralFailureNormalModeHeatOff [FAILED]");
-        }
       }
 
       self.last_index = state.current_timeslice;
     }
     
   }
+
+  // ===========================  Monitor Properties ========================
+
+  // ===== Helper Functions =====
+
+  #[verifier::external_body]
+  pub fn helper_MonitorInputErrorCondition(lowerAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                           upperAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                           currentTempWStatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+    lowerAlarmTempWStatus.status == Isolette_Data_Model::ValueStatus::Invalid ||
+    upperAlarmTempWStatus.status == Isolette_Data_Model::ValueStatus::Invalid ||
+    currentTempWStatus.status == Isolette_Data_Model::ValueStatus::Invalid
+  }
+
+  #[verifier::external_body]
+  pub fn helper_MonitorInternalFailureCondition(internalFailure: Isolette_Data_Model::Failure_Flag_i) -> bool {
+    internalFailure.flag
+  }
+
+  #[verifier::external_body]
+  pub fn helper_MonitorErrorCondition(lowerAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                      upperAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                      currentTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                      internalFailure: Isolette_Data_Model::Failure_Flag_i) -> bool {
+    helper_MonitorInputErrorCondition(lowerAlarmTempWStatus, upperAlarmTempWStatus, currentTempWStatus) |
+    helper_MonitorInternalFailureCondition(internalFailure)
+  }
+
+  // ===== Properties Functions =====
+
+  #[verifier::external_body]
+  pub fn sysProp_NormalModeAlarmOn(lowerAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                   upperAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                   currentTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                   internalFailure: Isolette_Data_Model::Failure_Flag_i,
+                                   monitor_mode: Isolette_Data_Model::Monitor_Mode,
+                                   alarm_control: Isolette_Data_Model::On_Off) -> bool {
+
+    !(
+      !helper_MonitorErrorCondition(lowerAlarmTempWStatus, upperAlarmTempWStatus, currentTempWStatus, internalFailure) &&
+      monitor_mode ==Isolette_Data_Model::Monitor_Mode::Normal_Monitor_Mode &&
+      (currentTempWStatus.degrees < lowerAlarmTempWStatus.degrees ||
+       currentTempWStatus.degrees > upperAlarmTempWStatus.degrees)
+    ) 
+    || 
+    (
+      alarm_control == Isolette_Data_Model::On_Off::Onn
+    )
+  }
+
+
+  // ===========================  Regulator Properties ========================
+
+
+  // ===== Helper Functions =====
 
   #[verifier::external_body]
   pub fn helper_RegulatorInputErrorCondition( lowerDesiredTempWStatus: Isolette_Data_Model::TempWstatus_i,
@@ -223,6 +262,8 @@ verus! {
     return (helper_RegulatorInputErrorCondition(lowerDesiredTempWStatus, upperDesiredTempWStatus, currentTempWStatus)
       || helper_RegulatorInternalFailureCondition(internalFailure))
   }
+
+  // ===== Properties Functions =====
 
   //----------------------------------------------
   //  Property:  CT < LDT implies Heat-Control ON
@@ -291,71 +332,6 @@ verus! {
             (
               heat_controlOut == Isolette_Data_Model::On_Off::Off
             );
-  }
-
-  //---------------------------------------------------
-  // Error Situations
-  //   - shift to Failed Mode
-  //   - heat control off
-  //---------------------------------------------------
-  #[verifier::external_body]
-  pub fn sysProp_InvalidCTNormalModeHeatOff(currentTempWStatusIN: Isolette_Data_Model::TempWstatus_i,
-                                            Regulator_ModeIn: Isolette_Data_Model::Regulator_Mode,
-                                            heat_controlOut: Isolette_Data_Model::On_Off,
-                                           ) -> bool {
-    return !(
-      currentTempWStatusIN.status == Isolette_Data_Model::ValueStatus::Invalid
-      && Regulator_ModeIn == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-    )    
-    ||
-    (
-      heat_controlOut == Isolette_Data_Model::On_Off::Off
-    )                            
-  }
-
-  #[verifier::external_body]
-  pub fn sysProp_InvalidUDTNormalModeHeatOff(upperDesiredTempWStatusIN: Isolette_Data_Model::TempWstatus_i,
-                                             Regulator_ModeIn: Isolette_Data_Model::Regulator_Mode,
-                                             heat_controlOut: Isolette_Data_Model::On_Off,
-                                            ) -> bool {
-    return !(
-      upperDesiredTempWStatusIN.status == Isolette_Data_Model::ValueStatus::Invalid
-      && Regulator_ModeIn == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-    )    
-    ||
-    (
-      heat_controlOut == Isolette_Data_Model::On_Off::Off
-    )                            
-  }
-
-  #[verifier::external_body]
-  pub fn sysProp_InvalidLDTNormalModeHeatOff(lowerDesiredTempWStatusIN: Isolette_Data_Model::TempWstatus_i,
-                                             Regulator_ModeIn: Isolette_Data_Model::Regulator_Mode,
-                                             heat_controlOut: Isolette_Data_Model::On_Off,
-                                            ) -> bool {
-    return !(
-      lowerDesiredTempWStatusIN.status == Isolette_Data_Model::ValueStatus::Invalid
-      && Regulator_ModeIn == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-    )    
-    ||
-    (
-      heat_controlOut == Isolette_Data_Model::On_Off::Off
-    )                            
-  }
-
-  #[verifier::external_body]
-  pub fn sysProp_InteralFailureNormalModeHeatOff(internalFailure: Isolette_Data_Model::Failure_Flag_i,
-                                                 Regulator_ModeIn: Isolette_Data_Model::Regulator_Mode,
-                                                 heat_controlOut: Isolette_Data_Model::On_Off,
-                                                ) -> bool {
-    return !(
-      helper_RegulatorInternalFailureCondition(internalFailure)
-      && Regulator_ModeIn == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-    )    
-    ||
-    (
-      heat_controlOut == Isolette_Data_Model::On_Off::Off
-    )                            
   }
 
   // ===========================  Display Temperature Properties ========================

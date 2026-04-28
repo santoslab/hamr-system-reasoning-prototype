@@ -1,3 +1,6 @@
+// some helper functions to determine error conditions
+// helper_RegulatorErrorCondition(...)
+
 Contract {
 	SysAssert {
         Name: START_Assert,
@@ -36,7 +39,7 @@ Contract {
         Assert: True
     },
     SplitJoin {
-        Schema {
+        Schema { // Regulator
             SysAssert {
                 Name: ,
                 Assert: True
@@ -59,18 +62,27 @@ Contract {
                 Name: mri
             },
             SysAssert {
-                Name: ,
-                Assert: True
+                Name: Post_MRI_Assert,
+                Assert: 
+                    (interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                                                     and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
             },
             Component {
                 Name: mhs
             },
             SysAssert {
-                Name: ,
-                Assert: True
+                Name: END_Regulator_Assert,
+                Assert: 
+                    (
+                        ((interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                                                     and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
+                            and (mrm_mrm_regulator_mode == Isolette_Data_Model::Regulator_Mode.Normal_Regulator_Mode)
+                            and (cpi_thermostat_current_tempWstatus.degrees > oip_oit_upper_desired_tempWstatus.degrees))
+                        implies (mhs_mhs_heat_control == Isolette_Data_Model::On_Off.Off)
+                    )
             }
         },
-        Schema {
+        Schema { //Monitor
             SysAssert {
                 Name: ,
                 Assert: True
