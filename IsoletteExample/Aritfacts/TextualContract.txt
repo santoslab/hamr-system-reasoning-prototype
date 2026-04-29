@@ -73,13 +73,11 @@ Contract {
             SysAssert {
                 Name: END_Regulator_Assert,
                 Assert: 
-                    (
-                        ((interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
-                                                     and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
-                            and (mrm_mrm_regulator_mode == Isolette_Data_Model::Regulator_Mode.Normal_Regulator_Mode)
-                            and (cpi_thermostat_current_tempWstatus.degrees > oip_oit_upper_desired_tempWstatus.degrees))
-                        implies (mhs_mhs_heat_control == Isolette_Data_Model::On_Off.Off)
-                    )
+                    (!(helper_RegulatorErrorCondition(lowerDesiredTempWStatus, upperDesiredTempWStatus, currentTempWStatus, internalFailure)) //This would be defined as a gumbo function or something similar
+                        and Regulator_Mode == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
+                        and currentTempWStatus.degrees < lowerDesiredTempWStatusIN.degrees)
+                    implies heat_controlOut == Isolette_Data_Model::On_Off::Onn
+                    
             }
         },
         Schema { //Monitor
@@ -113,7 +111,12 @@ Contract {
             },
             SysAssert {
                 Name: ,
-                Assert: True
+                Assert:
+                    !helper_MonitorErrorCondition(lowerAlarmTempWStatus, upperAlarmTempWStatus, currentTempWStatus, internalFailure)
+                        and monitor_mode ==Isolette_Data_Model::Monitor_Mode::Normal_Monitor_Mode &&
+                        and (currentTempWStatus.degrees < lowerAlarmTempWStatus.degrees
+                             or currentTempWStatus.degrees > upperAlarmTempWStatus.degrees)
+                    implies alarm_control == Isolette_Data_Model::On_Off::Onn
             }
         }
     }
