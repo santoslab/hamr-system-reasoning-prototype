@@ -175,6 +175,7 @@ verus! {
         } else {
           log_info("[REGULATOR] sysProp_InitModeHeatOff [FAILED]");
         }
+
       }
 
       self.last_index = state.current_timeslice;
@@ -272,21 +273,35 @@ verus! {
   //      If current temp is less than lower desired, then heat control shall be ON
   //----------------------------------------------
   #[verifier::external_body]
-  pub fn sysProp_NormalModeHeatOnn( Regulator_ModeIN: Isolette_Data_Model::Regulator_Mode,
-                                    currentTempWStatusIN: Isolette_Data_Model::TempWstatus_i,
-                                    lowerDesiredTempWStatusIN: Isolette_Data_Model::TempWstatus_i,
-                                    upperDesiredTempWStatusIN: Isolette_Data_Model::TempWstatus_i,
-                                    internalFailureIN: Isolette_Data_Model::Failure_Flag_i,
-                                    heat_controlOut: Isolette_Data_Model::On_Off
+  pub fn sysProp_NormalModeHeatOnn( regulator_mode: Isolette_Data_Model::Regulator_Mode,
+                                    currentTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                    lowerDesiredTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                    upperDesiredTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                    internalFailure: Isolette_Data_Model::Failure_Flag_i,
+                                    heat_control: Isolette_Data_Model::On_Off
                                   ) -> bool{
+
+
+    if (lowerDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
+        && upperDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
+        && currentTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
+        && regulator_mode == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
+        && currentTempWStatus.degrees < lowerDesiredTempWStatus.degrees) {
+      log_info("[REGULATOR] sysProp_NormalModeHeatOnn PRECONDITION SATISIFIED");
+    } else {
+      log_info("[REGULATOR] sysProp_NormalModeHeatOnn PRECONDITION NOT SATISIFIED");
+    }
+
     return !(
-              !(helper_RegulatorErrorCondition(lowerDesiredTempWStatusIN, upperDesiredTempWStatusIN, currentTempWStatusIN, internalFailureIN))
-              && Regulator_ModeIN == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-              && currentTempWStatusIN.degrees < lowerDesiredTempWStatusIN.degrees
+              lowerDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
+              && upperDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
+              && currentTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
+              && regulator_mode == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
+              && currentTempWStatus.degrees < lowerDesiredTempWStatus.degrees
             ) 
             ||
             (
-              heat_controlOut == Isolette_Data_Model::On_Off::Onn
+              heat_control == Isolette_Data_Model::On_Off::Onn
             );
   }
   

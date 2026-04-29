@@ -1,6 +1,18 @@
 // some helper functions to determine error conditions
 // helper_RegulatorErrorCondition(...)
 
+// Add variables to store values in previous version like for ports in verus in the implimentation
+
+// Ignore the fact that some of the assumptions are not provable
+
+// Failed to Failed
+// Prev heat cmd is correct
+
+Invariants { //the neccesary conditions to prove this are not included in the temp sensor
+    lower_alarm_tempWstatus.degrees <= upper_alarm_tempWstatus.degrees
+    and lower_desired_tempWstatus.degrees <= upper_desired_tempWstatus.degrees
+}
+
 Contract {
 	SysAssert {
         Name: START_Assert,
@@ -9,119 +21,164 @@ Contract {
     SplitJoin {
         Schema {
             SysAssert {
-                Name: ,
+                Name: START_OI_Assert,
                 Assert: True
             },
-            Component {
+            Component { //does not specify the relation between lower_desired_tempWstatus and upper_alarm_tempWstatus
                 Name: oi
             },
             SysAssert {
-                Name: ,
+                Name: END_OI_Assert,
                 Assert: True
             }
         },
         Schema {
             SysAssert {
-                Name: ,
+                Name: START_TS_Assert,
                 Assert: True
             },
             Component {
                 Name: ts
             },
             SysAssert {
-                Name: ,
+                Name: END_TS_Assert,
                 Assert: True
             }
         }
     },
     SysAssert {
-        Name: ,
+        Name: Post_TS_OI_Assert,
         Assert: True
     },
     SplitJoin {
         Schema { // Regulator
             SysAssert {
-                Name: ,
+                Name: START_Regulator_Assert,
                 Assert: True
             },
             Component {
                 Name: drf
             },
             SysAssert {
-                Name: ,
+                Name: Post_DRF_Assert,
                 Assert: True
+            },
+            Component { //precondition satisfied by the invariant
+                Name: mri
+            },
+            SysAssert {
+                Name: Post_MRI_Assert,
+                Assert:
+                    ( //derived from REQ_MRI_8
+                        (not interface_failure.flag)
+                        imples (lower_desired_temp.degrees == lower_desired_tempWstatus.degrees 
+                            and upper_desired_temp.degrees == upper_desired_tempWstatus.degrees)
+                    )
+                    and
+                    ( //derived from REQ_MRI_7
+                        (interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                                                        and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
+                    )
             },
             Component {
                 Name: mrm
             },
             SysAssert {
-                Name: ,
-                Assert: True
-            },
-            Component {
-                Name: mri
-            },
-            SysAssert {
-                Name: Post_MRI_Assert,
+                Name: Post_MRM_Assert,
                 Assert: 
-                    (interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
-                                                     and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
+                    ( //property is carried over due to frame condition
+                        (not interface_failure.flag)
+                        imples (lower_desired_temp.degrees == lower_desired_tempWstatus.degrees 
+                            and upper_desired_temp.degrees == upper_desired_tempWstatus.degrees)
+                    )
+                    and
+                    ( //property is carried over due to frame condition
+                        (interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                                                        and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
+                    )
             },
-            Component {
+            Component { //precondition will be proved from invariant and pre-assertion 
+                        //The precondition is too tight because REQ_MRI_9 does not define how failure should be handeled
                 Name: mhs
             },
-            SysAssert {
+            SysAssert { //look at REQ_MHS_2
                 Name: END_Regulator_Assert,
                 Assert: 
-                    (!(helper_RegulatorErrorCondition(lowerDesiredTempWStatus, upperDesiredTempWStatus, currentTempWStatus, internalFailure)) //This would be defined as a gumbo function or something similar
+                    (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
+                        and upperDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus.Valid
+                        and currentTempWStatus.status == Isolette_Data_Model::ValueStatus.Valid
                         and Regulator_Mode == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-                        and currentTempWStatus.degrees < lowerDesiredTempWStatusIN.degrees)
-                    implies heat_controlOut == Isolette_Data_Model::On_Off::Onn
+                        and currentTempWStatus.degrees < lowerDesiredTempWStatus.degrees)
+                    implies (heat_control == Isolette_Data_Model::On_Off::Onn)
                     
             }
         },
         Schema { //Monitor
             SysAssert {
-                Name: ,
+                Name: START_Monitor_Assert,
                 Assert: True
             },
             Component {
                 Name: dmf
             },
             SysAssert {
-                Name: ,
-                Assert: True
-            },
-            Component {
-                Name: mmm
-            },
-            SysAssert {
-                Name: ,
+                Name: Post_DMF_Assert,
                 Assert: True
             },
             Component {
                 Name: mmi
             },
             SysAssert {
-                Name: ,
-                Assert: True
+                Name: Post_MMI_Assert,
+                Assert: 
+                    ( //derived from REQ_MMI_5
+                        (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                            and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid)))
+                        implies not interface_failure.flag
+                    )
+                    and
+                    ( //derived from REQ_MMI_6
+                        (not interface_failure.flag)
+                        imples (lower_alarm_temp.degrees == lower_alarm_tempWstatus.degrees 
+                            and upper_alarm_temp.degrees == upper_alarm_tempWstatus.degrees)
+                    )
+            },
+            Component {
+                Name: mmm
+            },
+            SysAssert {
+                Name: Post_MMM_Assert,
+                Assert: 
+                    ( //property is carried over due to frame condition
+                        (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                            and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid)))
+                        implies not interface_failure.flag
+                    )
+                    and
+                    ( //property is carried over due to frame condition
+                        (not interface_failure.flag)
+                        imples (lower_alarm_temp.degrees == lower_alarm_tempWstatus.degrees 
+                            and upper_alarm_temp.degrees == upper_alarm_tempWstatus.degrees)
+                    )
             },
             Component {
                 Name: ma
             },
-            SysAssert {
-                Name: ,
+            SysAssert { //look at REQ_MA_2
+                Name: END_Monitor_Assert,
                 Assert:
-                    !helper_MonitorErrorCondition(lowerAlarmTempWStatus, upperAlarmTempWStatus, currentTempWStatus, internalFailure)
-                        and monitor_mode ==Isolette_Data_Model::Monitor_Mode::Normal_Monitor_Mode &&
+                    (lower_alarm_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
+                        and upper_alarm_tempWStatus.status == Isolette_Data_Model::ValueStatus.Valid
+                        and currentTempWStatus.status == Isolette_Data_Model::ValueStatus.Valid    
+                        and monitor_mode == Isolette_Data_Model::Monitor_Mode::Normal_Monitor_Mode &&
                         and (currentTempWStatus.degrees < lowerAlarmTempWStatus.degrees
-                             or currentTempWStatus.degrees > upperAlarmTempWStatus.degrees)
+                             or currentTempWStatus.degrees > upperAlarmTempWStatus.degrees))
                     implies alarm_control == Isolette_Data_Model::On_Off::Onn
             }
         }
     }
     SysAssert {
-        Name: ,
+        Name: START_HS_Assert,
         Assert: True
     },
     Component {
