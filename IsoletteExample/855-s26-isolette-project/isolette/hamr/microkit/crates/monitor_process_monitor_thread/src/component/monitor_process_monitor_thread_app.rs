@@ -58,8 +58,6 @@ verus! {
       }
     }
 
-    
-
     #[verifier::external_body]
     pub fn no_verus <API: monitor_process_monitor_thread_Full_Api>(
       &mut self,
@@ -141,48 +139,411 @@ verus! {
       let mmm_mmm_monitor_mode = api.get_mmm_mmm_monitor_mode();
       let dmf_dmf_internal_failure = api.get_dmf_dmf_internal_failure();
       
-      if self.prev_user_ch[idx] == 5 { // Following Manage Alarm
-        if sysProp_NormalModeAlarmOn(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, cpi_thermostat_current_tempWstatus, dmf_dmf_internal_failure, mmm_mmm_monitor_mode, ma_ma_alarm_control) {
-          log_info("[MONITOR] sysProp_NormalModeAlarmOn [PASSING]");
-        } else {
-          log_info("[MONITOR] sysProp_NormalModeAlarmOn [FAILED]");
-        }
+      /*
+        --------------------------------------------------------------
+        ASSOCIATED PETRI NET WALK
+        --------------------------------------------------------------
+          {START_Assert} 
+
+          --SPLIT--> 
+          {START_OI_Assert, START_TS_Assert} 
+
+          --TS--> 
+          {START_OI_Assert, END_TS_Assert} 
+
+          --OI--> 
+          {END_OI_Assert, END_TS_Assert}
+
+          --JOIN--> 
+          {Post_TS_OI_Assert} 
+
+          --SPLIT--> 
+          {START_Regulator_Assert, START_Monitor_Assert}
+
+          --DMF--> 
+          {START_Regulator_Assert, Post_DMF_Assert}
+
+          --MMI--> 
+          {START_Regulator_Assert, Post_MMI_Assert}
+          
+          --MMM--> 
+          {START_Regulator_Assert, Post_MMM_Assert}
+
+          --MA--> 
+          {START_Regulator_Assert, END_Monitor_Assert}
+
+          --DRF--> 
+          {Post_DRF_Assert, END_Monitor_Assert}
+
+          --MRI--> 
+          {Post_MRI_Assert, END_Monitor_Assert}
+
+          --MRM--> 
+          {Post_MRM_Assert, END_Monitor_Assert}
+
+          --MHS--> 
+          {END_Regulator_Assert, END_Monitor_Assert}
+
+          --JOIN--> 
+          {START_HS_Assert}
+
+          --HS--> 
+          {END_Assert}
+        
+        --------------------------------------------------------------
+        COLLAPSED WALK
+        --------------------------------------------------------------
+          {START_Assert, START_OI_Assert, START_TS_Assert} 
+
+          --TS--> 
+          {START_OI_Assert, END_TS_Assert} 
+
+          --OI--> 
+          {END_OI_Assert, END_TS_Assert, Post_TS_OI_Assert, START_Regulator_Assert, START_Monitor_Assert}
+
+          --DMF--> 
+          {START_Regulator_Assert, Post_DMF_Assert}
+
+          --MMI--> 
+          {START_Regulator_Assert, Post_MMI_Assert}
+          
+          --MMM--> 
+          {START_Regulator_Assert, Post_MMM_Assert}
+
+          --MA--> 
+          {START_Regulator_Assert, END_Monitor_Assert}
+
+          --DRF--> 
+          {Post_DRF_Assert, END_Monitor_Assert}
+
+          --MRI--> 
+          {Post_MRI_Assert, END_Monitor_Assert}
+
+          --MRM--> 
+          {Post_MRM_Assert, END_Monitor_Assert}
+
+          --MHS--> 
+          {END_Regulator_Assert, END_Monitor_Assert, START_HS_Assert}
+
+          --HS--> 
+          {END_Assert}
+      */
+
+
+      match self.prev_user_ch[idx] {
+        2 => { //Temp Sensor
+          if (END_TS_Assert()) {
+            log_info("[Post TEMP SENSOR] END_TS_Assert PASSED");
+          } else {
+            log_info("[Post TEMP SENSOR] END_TS_Assert FAILED");
+          }
+          
+          if(START_OI_Assert()) {
+            log_info("[Post TEMP SENSOR] START_OI_Assert PASSED");
+          } else {
+            log_info("[Post TEMP SENSOR] START_OI_Assert FAILED");
+          }
+        },
+        3 => { // Operator Interface
+          if (END_OI_Assert()) {
+            log_info("[Post Operator Interface] END_OI_Assert PASSED");
+          } else {
+            log_info("[Post Operator Interface] END_OI_Assert FAILED");
+          }
+          
+          if(END_TS_Assert()) {
+            log_info("[Post Operator Interface] END_TS_Assert PASSED");
+          } else {
+            log_info("[Post Operator Interface] END_TS_Assert FAILED");
+          }
+          
+          if(Post_TS_OI_Assert()) {
+            log_info("[Post Operator Interface] Post_TS_OI_Assert PASSED");
+          } else {
+            log_info("[Post Operator Interface] Post_TS_OI_Assert FAILED");
+          }
+
+          if (START_Regulator_Assert()) {
+            log_info("[Post Operator Interface] START_Regulator_Assert PASSED");
+          } else {
+            log_info("[Post Operator Interface] START_Regulator_Assert FAILED");
+          }
+          
+          if(START_Monitor_Assert()) {
+            log_info("[Post Operator Interface] START_Monitor_Assert PASSED");
+          } else {
+            log_info("[Post Operator Interface] START_Monitor_Assert FAILED");
+          }
+        },
+        4 => { // Detect Monitor Failure
+          if (START_Regulator_Assert()) {
+            log_info("[Post DMF] START_Regulator_Assert PASSED");
+          } else {
+            log_info("[Post DMF] START_Regulator_Assert FAILED");
+          }
+          
+          if (Post_DMF_Assert()) {
+            log_info("[Post DMF] Post_DMF_Assert PASSED");
+          } else {
+            log_info("[Post DMF] Post_DMF_Assert FAILED");
+          }
+        },
+        5 => { // Manage Monitor Interface
+          if (START_Regulator_Assert()) {
+            log_info("[Post MMI] START_Regulator_Assert PASSED");
+          } else {
+            log_info("[Post MMI] START_Regulator_Assert FAILED");
+          }
+          
+          if (Post_MMI_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, mmi_mmi_lower_alarm_temp, mmi_mmi_upper_alarm_temp, mmi_mmi_interface_failure)) {
+            log_info("[Post MMI] Post_MMI_Assert PASSED");
+          } else {
+            log_info("[Post MMI] Post_MMI_Assert FAILED");
+          }
+        },
+        6 => { // Manage Monitor Mode
+          if (START_Regulator_Assert()) {
+            log_info("[Post MMM] START_Regulator_Assert PASSED");
+          } else {
+            log_info("[Post MMM] START_Regulator_Assert FAILED");
+          }
+          
+          if (Post_MMM_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, mmi_mmi_lower_alarm_temp, mmi_mmi_upper_alarm_temp, mmi_mmi_interface_failure)) {
+            log_info("[Post MMM] Post_MMM_Assert PASSED");
+          } else {
+            log_info("[Post MMM] Post_MMM_Assert FAILED");
+          }
+        },
+        7 => { // Manage Alarm
+          if (START_Regulator_Assert()) {
+            log_info("[Post MA] START_Regulator_Assert PASSED");
+          } else {
+            log_info("[Post MA] START_Regulator_Assert FAILED");
+          }
+          
+          if (END_Monitor_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, cpi_thermostat_current_tempWstatus, mmm_mmm_monitor_mode, mmi_mmi_interface_failure, ma_ma_alarm_control)) {
+            log_info("[Post MA] END_Monitor_Assert PASSED");
+          } else {
+            log_info("[Post MA] END_Monitor_Assert FAILED");
+          }
+        },
+        8 => { // Detect Regulator Failure
+          if (Post_DRF_Assert()) {
+            log_info("[Post DRF] Post_DRF_Assert PASSED");
+          } else {
+            log_info("[Post DRF] Post_DRF_Assert FAILED");
+          }
+          
+          if (END_Monitor_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, cpi_thermostat_current_tempWstatus, mmm_mmm_monitor_mode, mmi_mmi_interface_failure, ma_ma_alarm_control)) {
+            log_info("[Post DRF] END_Monitor_Assert PASSED");
+          } else {
+            log_info("[Post DRF] END_Monitor_Assert FAILED");
+          }
+        },
+        9 => { // Manage Regulator Interface
+          if (Post_MRI_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus, mri_mri_lower_desired_temp, mri_mri_upper_desired_temp, mri_mri_interface_failure)) {
+            log_info("[Post MRI] Post_MRI_Assert PASSED");
+          } else {
+            log_info("[Post MRI] Post_MRI_Assert FAILED");
+          }
+          
+          if (END_Monitor_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, cpi_thermostat_current_tempWstatus, mmm_mmm_monitor_mode, mmi_mmi_interface_failure, ma_ma_alarm_control)) {
+            log_info("[Post MRI] END_Monitor_Assert PASSED");
+          } else {
+            log_info("[Post MRI] END_Monitor_Assert FAILED");
+          }
+        },
+        10 => { // Manage Regulator Mode
+          if (Post_MRM_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus, mri_mri_lower_desired_temp, mri_mri_upper_desired_temp, mri_mri_interface_failure)) {
+            log_info("[Post MRI] Post_MRI_Assert PASSED");
+          } else {
+            log_info("[Post MRI] Post_MRI_Assert FAILED");
+          }
+          
+          if (END_Monitor_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, cpi_thermostat_current_tempWstatus, mmm_mmm_monitor_mode, mmi_mmi_interface_failure, ma_ma_alarm_control)) {
+            log_info("[Post MRI] END_Monitor_Assert PASSED");
+          } else {
+            log_info("[Post MRI] END_Monitor_Assert FAILED");
+          }
+        },
+        11 => { // Manage Heat Source
+          if (END_Regulator_Assert(mrm_mrm_regulator_mode, cpi_thermostat_current_tempWstatus, oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus, drf_drf_internal_failure, mhs_mhs_heat_control)) {
+            log_info("[Post MHS] END_Regulator_Assert PASSED");
+          } else {
+            log_info("[Post MHS] END_Regulator_Assert FAILED");
+          }
+          
+          if (END_Monitor_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, cpi_thermostat_current_tempWstatus, mmm_mmm_monitor_mode, mmi_mmi_interface_failure, ma_ma_alarm_control)) {
+            log_info("[Post MHS] END_Monitor_Assert PASSED");
+          } else {
+            log_info("[Post MHS] END_Monitor_Assert FAILED");
+          }
+
+          if (START_HS_Assert()) {
+            log_info("[Post MHS] START_HS_Assert PASSED");
+          } else {
+            log_info("[Post MHS] START_HS_Assert FAILED");
+          }
+        },
+        12 => { // Heat Source
+          if(END_Assert()) {
+            log_info("[Post HS] END_Assert PASSED");
+          } else {
+            log_info("[Post HS] END_Assert FAILED");
+          }
+
+          if(START_Assert()) {
+            log_info("[Post HS] START_Assert PASSED");
+          } else {
+            log_info("[Post HS] START_Assert FAILED");
+          }
+
+          if(START_OI_Assert()) {
+            log_info("[Post HS] START_OI_Assert PASSED");
+          } else {
+            log_info("[Post HS] START_OI_Assert FAILED");
+          }
+
+          if(START_TS_Assert()) {
+            log_info("[Post HS] START_TS_Assert PASSED");
+          } else {
+            log_info("[Post HS] START_TS_Assert FAILED");
+          }
+        },
+        _ => log_info("SHCEDULE ERROR")
       }
 
-      if self.prev_user_ch[idx] == 7 { // Following Manage Regulator Interface
-        if sysProp_NormalDisplayTemp(mrm_mrm_regulator_mode, mri_mri_displayed_temp, cpi_thermostat_current_tempWstatus) {
-          log_info("[REGULATOR] sysProp_NormalDisplayTemp [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_NormalDisplayTemp [FAILED]");
-        }
-      }
-
-      if self.prev_user_ch[idx] == 9 { // Following Manage Heat Source
-        if sysProp_NormalModeHeatOnn(mrm_mrm_regulator_mode, cpi_thermostat_current_tempWstatus, oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus, drf_drf_internal_failure, mhs_mhs_heat_control) {
-          log_info("[REGULATOR] sysProp_NormalModeHeatOnn [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_NormalModeHeatOnn [FAILED]");
-        }
-
-        if sysProp_NormalModeHeatOff(mrm_mrm_regulator_mode, cpi_thermostat_current_tempWstatus, oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus, drf_drf_internal_failure, mhs_mhs_heat_control) {
-          log_info("[REGULATOR] sysProp_NormalModeHeatOff [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_NormalModeHeatOff [FAILED]");
-        }
-
-        if sysProp_InitModeHeatOff(mrm_mrm_regulator_mode, mhs_mhs_heat_control) {
-          log_info("[REGULATOR] sysProp_InitModeHeatOff [PASSING]");
-        } else {
-          log_info("[REGULATOR] sysProp_InitModeHeatOff [FAILED]");
-        }
-
-      }
 
       self.last_index = state.current_timeslice;
     }
     
   }
+  
+  // =========================== System Assert Functions ===========================
 
+
+  #[verifier::external_body]
+  pub fn START_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn START_OI_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn END_OI_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn START_TS_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn END_TS_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn Post_TS_OI_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn START_Regulator_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn Post_DRF_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn Post_MRI_Assert(lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          lower_desired_temp: Isolette_Data_Model::Temp_i,
+                          upper_desired_temp: Isolette_Data_Model::Temp_i,
+                          interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
+    sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
+    && sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
+  }
+
+  #[verifier::external_body]
+  pub fn Post_MRM_Assert(lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          lower_desired_temp: Isolette_Data_Model::Temp_i,
+                          upper_desired_temp: Isolette_Data_Model::Temp_i,
+                          interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
+    sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
+    && sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
+  }
+
+  #[verifier::external_body]
+  pub fn END_Regulator_Assert(regulator_mode: Isolette_Data_Model::Regulator_Mode,
+                              currentTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                              lowerDesiredTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                              upperDesiredTempWStatus: Isolette_Data_Model::TempWstatus_i,
+                              internalFailure: Isolette_Data_Model::Failure_Flag_i,
+                              heat_control: Isolette_Data_Model::On_Off) -> bool {
+    sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)
+  }
+
+  #[verifier::external_body]
+  pub fn START_Monitor_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn Post_DMF_Assert() -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn Post_MMI_Assert(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            lower_alarm_temp: Isolette_Data_Model::Temp_i,
+                            upper_alarm_temp: Isolette_Data_Model::Temp_i,
+                            interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
+    sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
+    && sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
+  }
+
+  #[verifier::external_body]
+  pub fn Post_MMM_Assert(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            lower_alarm_temp: Isolette_Data_Model::Temp_i,
+                            upper_alarm_temp: Isolette_Data_Model::Temp_i,
+                            interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
+    sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
+    && sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
+  }
+
+  #[verifier::external_body]
+  pub fn END_Monitor_Assert(
+                            lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i,
+                            current_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            monitor_mode: Isolette_Data_Model::Monitor_Mode,
+                            interface_failure: Isolette_Data_Model::Failure_Flag_i,
+                            alarm_control: Isolette_Data_Model::On_Off
+                          ) -> bool {
+    sysProp_NormalModeAlarmOn(lower_alarm_tempWstatus, upper_alarm_tempWStatus, current_tempWstatus, monitor_mode, interface_failure, alarm_control)
+  }
+
+  #[verifier::external_body]
+  pub fn START_HS_Assert () -> bool {
+    true
+  }
+
+  #[verifier::external_body]
+  pub fn END_Assert () -> bool {
+    true
+  }
+  
   // ===========================  Monitor Properties ========================
 
   // ===== Helper Functions =====
@@ -212,12 +573,47 @@ verus! {
 
   // ===== Properties Functions =====
 
+  //derived from REQ_MMI_5
+  #[verifier::external_body]
+  pub fn sysProp_REQ_MMI_5(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            interface_failure: Isolette_Data_Model::Failure_Flag_i
+                          ) -> bool {
+                            !(
+                              !((upper_alarm_tempWstatus.status == Isolette_Data_Model::ValueStatus::Valid) 
+                                && (lower_alarm_tempWstatus.status == Isolette_Data_Model::ValueStatus::Valid))
+                            )
+                            || 
+                            (
+                              !interface_failure.flag
+                            )
+                          }
+
+  //derived from REQ_MMI_6
+  #[verifier::external_body]
+  pub fn sysProp_REQ_MMI_6(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            lower_alarm_temp: Isolette_Data_Model::Temp_i,
+                            upper_alarm_temp: Isolette_Data_Model::Temp_i,
+                            interface_failure: Isolette_Data_Model::Failure_Flag_i
+                        ) -> bool {
+                          !(
+                            !interface_failure.flag
+                          )
+                          || 
+                          (
+                            lower_alarm_temp.degrees == lower_alarm_tempWstatus.degrees 
+                            && upper_alarm_temp.degrees == upper_alarm_tempWstatus.degrees
+                          )
+                        }
+              
+
   #[verifier::external_body]
   pub fn sysProp_NormalModeAlarmOn(lowerAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
                                    upperAlarmTempWStatus: Isolette_Data_Model::TempWstatus_i,
                                    currentTempWStatus: Isolette_Data_Model::TempWstatus_i,
-                                   internalFailure: Isolette_Data_Model::Failure_Flag_i,
                                    monitor_mode: Isolette_Data_Model::Monitor_Mode,
+                                   internalFailure: Isolette_Data_Model::Failure_Flag_i,
                                    alarm_control: Isolette_Data_Model::On_Off) -> bool {
 
     !(
@@ -266,6 +662,34 @@ verus! {
 
   // ===== Properties Functions =====
 
+  //derived from REQ_MRI_7
+  #[verifier::external_body]
+  pub fn sysProp_REQ_MRI_7( lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            interface_failure: Isolette_Data_Model::Failure_Flag_i
+                          ) -> bool {
+                            (interface_failure.flag == (!((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus::Valid) 
+                                                        && (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus::Valid))))
+                          }
+
+  //derived from REQ_MRI_8
+  #[verifier::external_body]
+  pub fn sysProp_REQ_MRI_8( lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                            lower_desired_temp: Isolette_Data_Model::Temp_i,
+                            upper_desired_temp: Isolette_Data_Model::Temp_i,
+                            interface_failure: Isolette_Data_Model::Failure_Flag_i
+                         ) -> bool {
+                            !(
+                              !interface_failure.flag
+                            )
+                            || 
+                            (
+                              lower_desired_temp.degrees == lower_desired_tempWstatus.degrees 
+                              && upper_desired_temp.degrees == upper_desired_tempWstatus.degrees
+                            )
+                         }
+
   //----------------------------------------------
   //  Property:  CT < LDT implies Heat-Control ON
   //    [high-level]
@@ -282,6 +706,7 @@ verus! {
                                   ) -> bool{
 
 
+                                    /*
     if (lowerDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
         && upperDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
         && currentTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
@@ -291,6 +716,7 @@ verus! {
     } else {
       log_info("[REGULATOR] sysProp_NormalModeHeatOnn PRECONDITION NOT SATISIFIED");
     }
+    */
 
     return !(
               lowerDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid

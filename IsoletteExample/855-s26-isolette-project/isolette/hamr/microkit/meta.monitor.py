@@ -268,17 +268,17 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
     #######################################
     # CHANNELS
     #######################################
-    channel_thermostat_rt_mri_mri_MON = 7
-    channel_thermostat_rt_mhs_mhs_MON = 9
-    channel_thermostat_rt_mrm_mrm_MON = 8
-    channel_thermostat_rt_drf_drf_MON = 10
-    channel_thermostat_mt_mmi_mmi_MON = 4
-    channel_thermostat_mt_ma_ma_MON = 5
-    channel_thermostat_mt_mmm_mmm_MON = 3
-    channel_thermostat_mt_dmf_dmf_MON = 6
-    channel_operator_interface_oip_oit_MON = 12
+    channel_thermostat_rt_mri_mri_MON = 9
+    channel_thermostat_rt_mhs_mhs_MON = 11
+    channel_thermostat_rt_mrm_mrm_MON = 10
+    channel_thermostat_rt_drf_drf_MON = 8
+    channel_thermostat_mt_mmi_mmi_MON = 5
+    channel_thermostat_mt_ma_ma_MON = 7
+    channel_thermostat_mt_mmm_mmm_MON = 6
+    channel_thermostat_mt_dmf_dmf_MON = 4
+    channel_operator_interface_oip_oit_MON = 3
     channel_temperature_sensor_cpi_thermostat_MON = 2
-    channel_heat_source_cpi_heat_controller_MON = 11
+    channel_heat_source_cpi_heat_controller_MON = 12
     channel_monitor_process_monitor_thread_MON = 13
 
     sdf.add_channel(Channel(scheduler, thermostat_rt_mri_mri_MON, a_id=channel_thermostat_rt_mri_mri_MON, b_id=0))
@@ -311,28 +311,32 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
     #######################################
     ts_monitor_process_monitor_thread_MON = (channel_monitor_process_monitor_thread_MON, 50000000, False)
     ts_temperature_sensor_cpi_thermostat_MON = (channel_temperature_sensor_cpi_thermostat_MON, 60000000, True)
-    ts_thermostat_mt_mmm_mmm_MON = (channel_thermostat_mt_mmm_mmm_MON, 60000000, True)
-    ts_thermostat_mt_mmi_mmi_MON = (channel_thermostat_mt_mmi_mmi_MON, 60000000, True)
-    ts_thermostat_mt_ma_ma_MON = (channel_thermostat_mt_ma_ma_MON, 60000000, True)
+    ts_operator_interface_oip_oit_MON = (channel_operator_interface_oip_oit_MON, 60000000, True)
     ts_thermostat_mt_dmf_dmf_MON = (channel_thermostat_mt_dmf_dmf_MON, 60000000, True)
+    ts_thermostat_mt_mmi_mmi_MON = (channel_thermostat_mt_mmi_mmi_MON, 60000000, True)
+    ts_thermostat_mt_mmm_mmm_MON = (channel_thermostat_mt_mmm_mmm_MON, 60000000, True)
+    ts_thermostat_mt_ma_ma_MON = (channel_thermostat_mt_ma_ma_MON, 60000000, True)
+    ts_thermostat_rt_drf_drf_MON = (channel_thermostat_rt_drf_drf_MON, 60000000, True)
     ts_thermostat_rt_mri_mri_MON = (channel_thermostat_rt_mri_mri_MON, 60000000, True)
     ts_thermostat_rt_mrm_mrm_MON = (channel_thermostat_rt_mrm_mrm_MON, 60000000, True)
     ts_thermostat_rt_mhs_mhs_MON = (channel_thermostat_rt_mhs_mhs_MON, 60000000, True)
-    ts_thermostat_rt_drf_drf_MON = (channel_thermostat_rt_drf_drf_MON, 60000000, True)
     ts_heat_source_cpi_heat_controller_MON = (channel_heat_source_cpi_heat_controller_MON, 60000000, True)
-    ts_operator_interface_oip_oit_MON = (channel_operator_interface_oip_oit_MON, 60000000, True)
 
     user_schedule = schedule(
       ts_monitor_process_monitor_thread_MON,
       ts_temperature_sensor_cpi_thermostat_MON,
       ts_monitor_process_monitor_thread_MON,
-      ts_thermostat_mt_mmm_mmm_MON,
+      ts_operator_interface_oip_oit_MON,
+      ts_monitor_process_monitor_thread_MON,
+      ts_thermostat_mt_dmf_dmf_MON,
       ts_monitor_process_monitor_thread_MON,
       ts_thermostat_mt_mmi_mmi_MON,
       ts_monitor_process_monitor_thread_MON,
+      ts_thermostat_mt_mmm_mmm_MON,
+      ts_monitor_process_monitor_thread_MON,
       ts_thermostat_mt_ma_ma_MON,
       ts_monitor_process_monitor_thread_MON,
-      ts_thermostat_mt_dmf_dmf_MON,
+      ts_thermostat_rt_drf_drf_MON,
       ts_monitor_process_monitor_thread_MON,
       ts_thermostat_rt_mri_mri_MON,
       ts_monitor_process_monitor_thread_MON,
@@ -340,11 +344,7 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
       ts_monitor_process_monitor_thread_MON,
       ts_thermostat_rt_mhs_mhs_MON,
       ts_monitor_process_monitor_thread_MON,
-      ts_thermostat_rt_drf_drf_MON,
-      ts_monitor_process_monitor_thread_MON,
-      ts_heat_source_cpi_heat_controller_MON,
-      ts_monitor_process_monitor_thread_MON,
-      ts_operator_interface_oip_oit_MON
+      ts_heat_source_cpi_heat_controller_MON
     )
 
     # END META MARKER

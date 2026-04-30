@@ -8,10 +8,82 @@
 // Failed to Failed
 // Prev heat cmd is correct
 
-Invariants { //the neccesary conditions to prove this are not included in the temp sensor
-    lower_alarm_tempWstatus.degrees <= upper_alarm_tempWstatus.degrees
-    and lower_desired_tempWstatus.degrees <= upper_desired_tempWstatus.degrees
-}
+
+functions
+    //REGULATOR
+    //Regulator end-to-end property
+    def sysProp_NormalModeHeatOnn( regulator_mode: Isolette_Data_Model::Regulator_Mode,
+                                   current_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                   lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                   upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                   internal_failure: Isolette_Data_Model::Failure_Flag_i,
+                                   heat_control: Isolette_Data_Model::On_Off
+                                 ): Base_Types::Boolean :=
+            (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
+              and upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
+              and current_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
+              and regulator_mode == Isolette_Data_Model::Regulator_Mode.Normal_Regulator_Mode
+              and current_tempWstatus.degrees < lower_desired_tempWstatus.degrees)
+            implies (heat_control == Isolette_Data_Model::On_Off::Onn)
+
+    //MRI property functions
+    //derived from REQ_MRI_7
+    def sysProp_REQ_MRI_7( lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                           upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                           interface_failure: Isolette_Data_Model::Failure_Flag_i
+                         ): Base_Types::Boolean :=
+            (interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                                        and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
+    
+    //derived from REQ_MRI_8
+    def sysProp_REQ_MRI_8( lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                           upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                           lower_desired_temp: Isolette_Data_Model::Temp_i,
+                           upper_desired_temp: Isolette_Data_Model::Temp_i,
+                           interface_failure: Isolette_Data_Model::Failure_Flag_i
+                         ): Base_Types::Boolean :=
+                (not interface_failure.flag)
+                imples (lower_desired_temp.degrees == lower_desired_tempWstatus.degrees 
+                        and upper_desired_temp.degrees == upper_desired_tempWstatus.degrees)
+
+    //MONITOR
+    //Monitor End-to-End property
+    def sysProp_NormalModeAlarmOn( 
+                                    lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                    upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i,
+                                    current_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                    monitor_mode: Isolette_Data_Model::Monitor_Mode
+                                    interface_failure: Isolette_Data_Model::Failure_Flag_i,
+                                    alarm_control: Isolette_Data_Model::On_Off
+                                 ): Base_Types::Boolean :=
+                (lower_alarm_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
+                    and upper_alarm_tempWStatus.status == Isolette_Data_Model::ValueStatus.Valid
+                    and current_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid    
+                    and monitor_mode == Isolette_Data_Model::Monitor_Mode::Normal_Monitor_Mode &&
+                    and (current_tempWstatus.degrees < lower_alarm_tempWstatus.degrees
+                         or current_tempWstatus.degrees > upper_alarm_tempWStatus.degrees))
+                    implies alarm_control == Isolette_Data_Model::On_Off::Onn
+
+    //MMI property functions
+    //derived from REQ_MMI_5
+    def sysProp_REQ_MMI_5(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          interface_failure: Isolette_Data_Model::Failure_Flag_i
+                         ): Base_Types::Boolean :=
+                (not((upper_alarm_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
+                    and (lower_alarm_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid)))
+                implies (not interface_failure.flag)
+
+    //derived from REQ_MMI_6
+    def sysProp_REQ_MMI_6(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                          lower_alarm_temp: Isolette_Data_Model::Temp_i,
+                          upper_alarm_temp: Isolette_Data_Model::Temp_i,
+                          interface_failure: Isolette_Data_Model::Failure_Flag_i
+                         ): Base_Types::Boolean :=
+                (not interface_failure.flag)
+                imples (lower_alarm_temp.degrees == lower_alarm_tempWstatus.degrees 
+                    and upper_alarm_temp.degrees == upper_alarm_tempWstatus.degrees)
 
 Contract {
 	SysAssert {
@@ -69,16 +141,8 @@ Contract {
             SysAssert {
                 Name: Post_MRI_Assert,
                 Assert:
-                    ( //derived from REQ_MRI_8
-                        (not interface_failure.flag)
-                        imples (lower_desired_temp.degrees == lower_desired_tempWstatus.degrees 
-                            and upper_desired_temp.degrees == upper_desired_tempWstatus.degrees)
-                    )
-                    and
-                    ( //derived from REQ_MRI_7
-                        (interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
-                                                        and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
-                    )
+                    sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
+                    and sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
             },
             Component {
                 Name: mrm
@@ -86,16 +150,9 @@ Contract {
             SysAssert {
                 Name: Post_MRM_Assert,
                 Assert: 
-                    ( //property is carried over due to frame condition
-                        (not interface_failure.flag)
-                        imples (lower_desired_temp.degrees == lower_desired_tempWstatus.degrees 
-                            and upper_desired_temp.degrees == upper_desired_tempWstatus.degrees)
-                    )
-                    and
-                    ( //property is carried over due to frame condition
-                        (interface_failure.flag == (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
-                                                        and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid))))
-                    )
+                    //These are preserved due to frame conditions
+                    sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
+                    and sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
             },
             Component { //precondition will be proved from invariant and pre-assertion 
                         //The precondition is too tight because REQ_MRI_9 does not define how failure should be handeled
@@ -104,12 +161,7 @@ Contract {
             SysAssert { //look at REQ_MHS_2
                 Name: END_Regulator_Assert,
                 Assert: 
-                    (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
-                        and upperDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus.Valid
-                        and currentTempWStatus.status == Isolette_Data_Model::ValueStatus.Valid
-                        and Regulator_Mode == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-                        and currentTempWStatus.degrees < lowerDesiredTempWStatus.degrees)
-                    implies (heat_control == Isolette_Data_Model::On_Off::Onn)
+                    sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)
                     
             }
         },
@@ -131,17 +183,8 @@ Contract {
             SysAssert {
                 Name: Post_MMI_Assert,
                 Assert: 
-                    ( //derived from REQ_MMI_5
-                        (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
-                            and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid)))
-                        implies not interface_failure.flag
-                    )
-                    and
-                    ( //derived from REQ_MMI_6
-                        (not interface_failure.flag)
-                        imples (lower_alarm_temp.degrees == lower_alarm_tempWstatus.degrees 
-                            and upper_alarm_temp.degrees == upper_alarm_tempWstatus.degrees)
-                    )
+                    sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
+                    and sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
             },
             Component {
                 Name: mmm
@@ -149,17 +192,9 @@ Contract {
             SysAssert {
                 Name: Post_MMM_Assert,
                 Assert: 
-                    ( //property is carried over due to frame condition
-                        (not((upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
-                            and (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid)))
-                        implies not interface_failure.flag
-                    )
-                    and
-                    ( //property is carried over due to frame condition
-                        (not interface_failure.flag)
-                        imples (lower_alarm_temp.degrees == lower_alarm_tempWstatus.degrees 
-                            and upper_alarm_temp.degrees == upper_alarm_tempWstatus.degrees)
-                    )
+                    //These are preserved due to frame conditions
+                    sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
+                    and sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
             },
             Component {
                 Name: ma
@@ -167,13 +202,7 @@ Contract {
             SysAssert { //look at REQ_MA_2
                 Name: END_Monitor_Assert,
                 Assert:
-                    (lower_alarm_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid
-                        and upper_alarm_tempWStatus.status == Isolette_Data_Model::ValueStatus.Valid
-                        and currentTempWStatus.status == Isolette_Data_Model::ValueStatus.Valid    
-                        and monitor_mode == Isolette_Data_Model::Monitor_Mode::Normal_Monitor_Mode &&
-                        and (currentTempWStatus.degrees < lowerAlarmTempWStatus.degrees
-                             or currentTempWStatus.degrees > upperAlarmTempWStatus.degrees))
-                    implies alarm_control == Isolette_Data_Model::On_Off::Onn
+                    sysProp_NormalModeAlarmOn(lower_alarm_tempWstatus, upper_alarm_tempWStatus, current_tempWstatus, monitor_mode, interface_failure, alarm_control)
             }
         }
     }
