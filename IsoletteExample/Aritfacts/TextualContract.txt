@@ -8,6 +8,9 @@
 // Failed to Failed
 // Prev heat cmd is correct
 
+// Stregnthen MMI and MRI by requiring that what ever values are outputed satisfy the requirements of the MA and MHS
+// Weaken MRI assumptions to be sysProp_Allowed_DesiredTempWStatus_Ranges
+
 
 functions
     //REGULATOR
