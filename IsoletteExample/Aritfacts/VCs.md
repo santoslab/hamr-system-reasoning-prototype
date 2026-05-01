@@ -27,7 +27,7 @@ START_Assert st ⊢ START_TS_Assert st
 
 ```
 START_OI_Assert st
-⊢ All assumes of OI hold for st
+⊢ OI's Precondition
 ```
 
 ### Next-Assert VC
@@ -36,7 +36,7 @@ START_OI_Assert st
 START_OI_Assert st1
 ^ OI_LocalWriteFrame st1 st2
 ^ OI_GlobalWriteFrame st1 st2
-^ All non-initialize guarantees, compute cases, and invariants for OI hold for st1 and st2
+^ OI's Postcondition
 ⊢ END_OI_Assert st2
 ```
 
@@ -108,7 +108,7 @@ START_Regulator_Assert st1
 
 ```
 Post_DRF_Assert st
-⊢ All assumes of MRI hold for st
+⊢ MRI's Precondition
 ```
 
 #### Next-Assert VC
@@ -117,7 +117,7 @@ Post_DRF_Assert st
 Post_DRF_Assert st1
 ^ MRI_LocalWriteFrame st1 st2
 ^ MRI_GlobalWriteFrame st1 st2
-^ All non-initialize guarantees, compute cases, and invariants for MRI hold for st1 and st2
+^ MRI's Postcondition
 ⊢ Post_MRI_Assert st2
 ```
 
@@ -127,7 +127,7 @@ Post_DRF_Assert st1
 
 ```
 Post_MRI_Assert st
-⊢ All assumes of MRM hold for st
+⊢ MRM's Precondition
 ```
 
 #### Next-Assert VC
@@ -136,7 +136,7 @@ Post_MRI_Assert st
 Post_MRI_Assert st1
 ^ MRM_LocalWriteFrame st1 st2
 ^ MRM_GlobalWriteFrame st1 st2
-^ All non-initialize guarantees, compute cases, and invariants for MRM hold for st1 and st2
+^ MRM's Postcondition
 ⊢ Post_MRM_Assert st2
 ```
 
@@ -146,7 +146,7 @@ Post_MRI_Assert st1
 
 ```
 Post_MRM_Assert st
-⊢ All assumes of MRM hold for st
+⊢ MHS's Precondition
 ```
 
 
@@ -156,7 +156,7 @@ Post_MRM_Assert st
 Post_MRM_Assert st1
 ^ MHS_LocalWriteFrame st1 st2
 ^ MHS_GlobalWriteFrame st1 st2
-^ All non-initialize guarantees, compute cases, and invariants for MHS hold for st1 and st2
+^ MHS's Postcondition
 ⊢ END_Regulator_Assert st2
 ```
 
@@ -187,7 +187,7 @@ START_Monitor_Assert st1
 
 ```
 Post_DMF_Assert st
-⊢ All assumes of MMI hold for st
+⊢ MMI's Precondition
 ```
 
 #### Next-Assert VC
@@ -196,7 +196,7 @@ Post_DMF_Assert st
 Post_DMF_Assert st1
 ^ MMI_LocalWriteFrame st1 st2
 ^ MMI_GlobalWriteFrame st1 st2
-^ All non-initialize guarantees, compute cases, and invariants for MMI hold for st1 and st2
+^ MMI's Postcondition
 ⊢ Post_MMI_Assert st2
 ```
 
@@ -206,7 +206,7 @@ Post_DMF_Assert st1
 
 ```
 Post_MMI_Assert st
-⊢ All assumes of MMM hold for st
+⊢ MMM's Precondition
 ```
 
 #### Next-Assert VC
@@ -215,7 +215,7 @@ Post_MMI_Assert st
 Post_MMI_Assert st1
 ^ MMM_LocalWriteFrame st1 st2
 ^ MMM_GlobalWriteFrame st1 st2
-^ All non-initialize guarantees, compute cases, and invariants for MMM hold for st1 and st2
+^ MMM's Postcondition
 ⊢ Post_MMM_Assert st2
 ```
 
@@ -225,7 +225,7 @@ Post_MMI_Assert st1
 
 ```
 Post_MMM_Assert st
-⊢ All assumes of MA hold for st
+⊢ MA's Precondition
 ```
 
 #### Next-Assert VC
@@ -234,7 +234,7 @@ Post_MMM_Assert st
 Post_MMM_Assert st1
 ^ MA_LocalWriteFrame st1 st2
 ^ MA_GlobalWriteFrame st1 st2
-^ All non-initialize guarantees, compute cases, and invariants for MA hold for st1 and st2
+^ MA's Postcondition
 ⊢ END_Monitor_Assert st2
 ```
 
