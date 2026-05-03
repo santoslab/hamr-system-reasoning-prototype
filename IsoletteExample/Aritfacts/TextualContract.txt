@@ -114,14 +114,18 @@ functions
         def sysProp_Table_A_12_LowerAlarmTemp(lower_alarm_temp: Isolette_Data_Model::Temp_i): Base_Types::Boolean :=
                     GUMBO_Library::GUMBO__Library::Allowed_LowerAlarmTemp(lower_alarm_temp.degrees);
                     
-        def sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp: Isolette_Data_Model::Temp_i) Base_Types::Boolean :=
+        def sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp: Isolette_Data_Model::Temp_i): Base_Types::Boolean :=
                     GUMBO_Library::GUMBO__Library::Allowed_UpperAlarmTemp(upper_alarm_temp.degrees);
+
+        def sysProp_Figure_A_7_Weakened(lower_alarm_temp: Isolette_Data_Model::Temp_i, 
+                                        upper_alarm_temp: Isolette_Data_Model::Temp_i): Base_Types::Boolean :=
+                    lower_alarm_temp.degrees <= upper_alarm_temp.degrees;
 
     //Operator Interface
 
         //OI IC Guarantees
         def sysProp_Allowed_LowerAlarmTempWstatus(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i): Base_Types::Boolean :=
-            GUMBO_Library::GUMBO__Library::Allowed_LowerAlarmTempWStatus(lower_alarm_tempWstatus)
+            GUMBO_Library::GUMBO__Library::Allowed_LowerAlarmTempWStatus(lower_alarm_tempWstatus);
 
         def sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i): Base_Types::Boolean :=
             GUMBO_Library::GUMBO__Library::Allowed_UpperAlarmTempWStatus(upper_alarm_tempWStatus);
@@ -130,11 +134,6 @@ functions
         def sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
                                                     upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i): Base_Types::Boolean :=
             GUMBO_Library::GUMBO__Library::Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWstatus);
-
-        def sysProp_Allowed_DesiredTempWStatus_Ranges(lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
-                                                      upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i): Base_Types::Boolean :=
-            (lower_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid & upper_desired_tempWstatus.status == Isolette_Data_Model::ValueStatus.Valid) 
-            implies lower_desired_tempWstatus.degrees <= upper_desired_tempWstatus.degrees
         
 Contract {
 	SysAssert {
@@ -142,12 +141,12 @@ Contract {
         Assert: True
     },
     SplitJoin {
-        Schema {
+        Schema { // OI
             SysAssert {
                 Name: START_OI_Assert,
                 Assert: True
             },
-            Component { //does not specify the relation between lower_desired_tempWstatus and upper_alarm_tempWstatus NEED TO ADD GUARANTEE
+            Component { //assumptions proven
                 Name: oi
             },
             SysAssert {
@@ -157,15 +156,15 @@ Contract {
                     sysProp_Allowed_LowerAlarmTempWstatus(lower_alarm_tempWstatus)
                     and sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus)
                     and sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
-                    and sysProp_Allowed_DesiredTempWStatus_Ranges(lower_desired_tempWstatus, upper_desired_tempWstatus)
+                    and sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus, upper_desired_tempWstatus)
             }
         },
-        Schema {
+        Schema { // TS
             SysAssert {
                 Name: START_TS_Assert,
                 Assert: True
             },
-            Component {
+            Component { //assumptions proven
                 Name: ts
             },
             SysAssert {
@@ -181,7 +180,7 @@ Contract {
             sysProp_Allowed_LowerAlarmTempWstatus(lower_alarm_tempWstatus)
             and sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus)
             and sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
-            and sysProp_Allowed_DesiredTempWStatus_Ranges(lower_desired_tempWstatus, upper_desired_tempWstatus)
+            and sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus, upper_desired_tempWstatus)
     },
     SplitJoin {
         Schema { // Regulator
@@ -189,18 +188,18 @@ Contract {
                 Name: START_Regulator_Assert,
                 Assert: 
                     //derived from SPLIT
-                    sysProp_Allowed_DesiredTempWStatus_Ranges(lower_desired_tempWstatus, upper_desired_tempWstatus)
+                    sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus, upper_desired_tempWstatus)
             },
-            Component {
+            Component { //assumptions proven
                 Name: drf
             },
             SysAssert {
                 Name: Post_DRF_Assert,
                 Assert: 
                     //holds from frame condition
-                    sysProp_Allowed_DesiredTempWStatus_Ranges(lower_desired_tempWstatus, upper_desired_tempWstatus)
+                    sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus, upper_desired_tempWstatus)
             },
-            Component { //precondition is too strong
+            Component { //assumptions proven
                 Name: mri
             },
             SysAssert {
@@ -209,11 +208,9 @@ Contract {
                     // derived from component contract
                         sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
                         and sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
-                    // derived from component contract and pre-assertions
-                    // PROPERTY CANNOT BE GUARANTEED SINCE TEMPS ARE UNDEFINED WHEN THE INTERFACE FAILS
                         and sysProp_lower_is_lower_temp(lower_desired_temp, upper_desired_temp)
             },
-            Component {
+            Component { //assumptions proven
                 Name: mrm
             },
             SysAssert {
@@ -224,14 +221,13 @@ Contract {
                     and sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
                     and sysProp_lower_is_lower_temp(lower_desired_temp, upper_desired_temp)
             },
-            Component { //precondition is too strong
+            Component { //assumptions proven
                 Name: mhs
             },
             SysAssert { //look at REQ_MHS_2
                 Name: END_Regulator_Assert,
                 Assert: 
-                    sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)
-                    
+                    sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)                   
             }
         },
         Schema { //Monitor
@@ -243,7 +239,7 @@ Contract {
                     and sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus)
                     and sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
             },
-            Component {
+            Component { //assumptions proven
                 Name: dmf
             },
             SysAssert {
@@ -254,7 +250,7 @@ Contract {
                     and sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus)
                     and sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
             },
-            Component {
+            Component { //assumptions proven
                 Name: mmi
             },
             SysAssert {
@@ -263,12 +259,12 @@ Contract {
                     // Dervied from component contract
                         sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
                         and sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
-                    // Derived from pre-assertions and component contract 
-                    // This causes 
+                        and sysProp_Figure_A_7_Weakened(lower_alarm_temp, upper_alarm_temp)
+                    // Derived from component contract, write frame, and pre-assertions
                         and sysProp_Table_A_12_LowerAlarmTemp(lower_alarm_temp)
                         and sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp)
             },
-            Component {
+            Component { //assumptions proven
                 Name: mmm
             },
             SysAssert { 
@@ -277,10 +273,11 @@ Contract {
                     //These are preserved due to frame conditions
                     sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
                     and sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
+                    and sysProp_Figure_A_7_Weakened(lower_alarm_temp, upper_alarm_temp)
                     and sysProp_Table_A_12_LowerAlarmTemp(lower_alarm_temp)
-                    and sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp)
+                    and sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp)   
             },
-            Component { //precondition is too strong
+            Component { //assumptions proven
                 Name: ma
             },
             SysAssert { //look at REQ_MA_2
@@ -290,11 +287,11 @@ Contract {
             }
         }
     }
-    SysAssert {
+    SysAssert { // HS
         Name: START_HS_Assert,
         Assert: True
     },
-    Component {
+    Component { //assumptions proven
         Name: hs
     },
     SysAssert {

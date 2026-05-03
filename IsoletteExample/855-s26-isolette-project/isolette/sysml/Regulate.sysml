@@ -178,8 +178,12 @@ package Regulate {
             
             //  ====== C o m p u t e    E n t r y    P o i n t   Behavior Constraints =====
             compute
-                // general assumption between incoming port values    
+                // general assumption between incoming port values  
                 assume lower_is_not_higher_than_upper: lower_desired_tempWstatus.degrees <= upper_desired_tempWstatus.degrees;
+
+                // NEW
+                // new requirement to satisfy the requirement of MHS
+                guarantee lower_is_lower_temp: lower_desired_temp.degrees <= upper_desired_temp.degrees;
             
                 compute_cases
                     // ====== Regulator Status ======    
@@ -223,7 +227,7 @@ package Regulate {
                                     |or the Upper Desired Temperature is Invalid,
                                     |the Regulator Interface Failure shall be set to True.
                                     |https://www.faa.gov/sites/faa.gov/files/aircraft/air_cert/design_approvals/air_software/AR-08-32.pdf#page=108 ":
-                        assume ((upper_desired_tempWstatus.status != Isolette_Data_Model::ValueStatus.Valid) | (upper_desired_tempWstatus.status != Isolette_Data_Model::ValueStatus.Valid));
+                        assume ((lower_desired_tempWstatus.status != Isolette_Data_Model::ValueStatus.Valid) | (upper_desired_tempWstatus.status != Isolette_Data_Model::ValueStatus.Valid));
                         guarantee interface_failure.flag;
             
                     case REQ_MRI_7 "If the Status attribute of the Lower Desired Temperature

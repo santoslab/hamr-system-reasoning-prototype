@@ -137,6 +137,33 @@ pub fn compute_CEP_Pre(
   return r0 && r1 && r2;
 }
 
+/** Compute Entrypoint Contract
+  *
+  * guarantee Figure_A_7_Weakened
+  * @param api_lower_alarm_temp outgoing data port
+  * @param api_upper_alarm_temp outgoing data port
+  */
+pub fn compute_spec_Figure_A_7_Weakened_guarantee(
+  api_lower_alarm_temp: Isolette_Data_Model::Temp_i,
+  api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
+{
+  api_lower_alarm_temp.degrees <= api_upper_alarm_temp.degrees
+}
+
+/** CEP-T-Guar: Top-level guarantee contracts for mmi's compute entrypoint
+  *
+  * @param api_lower_alarm_temp outgoing data port
+  * @param api_upper_alarm_temp outgoing data port
+  */
+pub fn compute_CEP_T_Guar(
+  api_lower_alarm_temp: Isolette_Data_Model::Temp_i,
+  api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
+{
+  let r0: bool = compute_spec_Figure_A_7_Weakened_guarantee(api_lower_alarm_temp, api_upper_alarm_temp);
+
+  return r0;
+}
+
 /** guarantee REQ_MMI_1
   *   If the Manage Monitor Interface mode is INIT,
   *   the Monitor Status shall be set to Init.
@@ -318,8 +345,11 @@ pub fn compute_CEP_Post(
   api_monitor_status: Isolette_Data_Model::Status,
   api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
 {
-  // CEP-T-Case: case clauses of mmi's compute entrypoint
-  let r0: bool = compute_CEP_T_Case(api_lower_alarm_tempWstatus, api_monitor_mode, api_upper_alarm_tempWstatus, api_interface_failure, api_lower_alarm_temp, api_monitor_status, api_upper_alarm_temp);
+  // CEP-Guar: guarantee clauses of mmi's compute entrypoint
+  let r0: bool = compute_CEP_T_Guar(api_lower_alarm_temp, api_upper_alarm_temp);
 
-  return r0;
+  // CEP-T-Case: case clauses of mmi's compute entrypoint
+  let r1: bool = compute_CEP_T_Case(api_lower_alarm_tempWstatus, api_monitor_mode, api_upper_alarm_tempWstatus, api_interface_failure, api_lower_alarm_temp, api_monitor_status, api_upper_alarm_temp);
+
+  return r0 && r1;
 }

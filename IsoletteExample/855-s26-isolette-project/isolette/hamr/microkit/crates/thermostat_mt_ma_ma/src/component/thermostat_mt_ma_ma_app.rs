@@ -47,12 +47,12 @@ verus! {
       api: &mut thermostat_mt_ma_ma_Application_Api<API>)
       requires
         // BEGIN MARKER TIME TRIGGERED REQUIRES
-        // assume Figure_A_7
+        // assume Figure_A_7_Weakened
         //   This is not explicitly stated in the requirements, but a reasonable
         //   assumption is that the lower alarm must be at least 1.0f less than
         //   the upper alarm in order to account for the 0.5f tolerance
         //   https://www.faa.gov/sites/faa.gov/files/aircraft/air_cert/design_approvals/air_software/AR-08-32.pdf#page=115 
-        old(api).upper_alarm_temp.degrees - old(api).lower_alarm_temp.degrees >= 1i32,
+        old(api).lower_alarm_temp.degrees <= old(api).upper_alarm_temp.degrees,
         // assume Table_A_12_LowerAlarmTemp
         //   Range [96..101]
         //   https://www.faa.gov/sites/faa.gov/files/aircraft/air_cert/design_approvals/air_software/AR-08-32.pdf#page=112 

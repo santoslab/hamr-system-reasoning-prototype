@@ -77,18 +77,38 @@ pub fn compute_spec_Allowed_AlarmTempWStatus_Ranges_guarantee(
   GUMBO_Library::Allowed_AlarmTempWStatus_Ranges(api_lower_alarm_tempWstatus, api_upper_alarm_tempWstatus)
 }
 
+/** Compute Entrypoint Contract
+  *
+  * guarantee lower_is_not_higher_than_upper
+  *   The lower_tempWStatus should be less than or equal to the upper_tempWStatus if both are valid.
+  *   While not listed in the requirements, it is a neccesary condition for the thermostat's regulator
+  * @param api_lower_desired_tempWstatus outgoing data port
+  * @param api_upper_desired_tempWstatus outgoing data port
+  */
+pub fn compute_spec_lower_is_not_higher_than_upper_guarantee(
+  api_lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+  api_upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i) -> bool
+{
+  api_lower_desired_tempWstatus.degrees <= api_upper_desired_tempWstatus.degrees
+}
+
 /** CEP-T-Guar: Top-level guarantee contracts for oit's compute entrypoint
   *
   * @param api_lower_alarm_tempWstatus outgoing data port
+  * @param api_lower_desired_tempWstatus outgoing data port
   * @param api_upper_alarm_tempWstatus outgoing data port
+  * @param api_upper_desired_tempWstatus outgoing data port
   */
 pub fn compute_CEP_T_Guar(
   api_lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
-  api_upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i) -> bool
+  api_lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+  api_upper_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+  api_upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i) -> bool
 {
   let r0: bool = compute_spec_Allowed_AlarmTempWStatus_Ranges_guarantee(api_lower_alarm_tempWstatus, api_upper_alarm_tempWstatus);
+  let r1: bool = compute_spec_lower_is_not_higher_than_upper_guarantee(api_lower_desired_tempWstatus, api_upper_desired_tempWstatus);
 
-  return r0;
+  return r0 && r1;
 }
 
 /** CEP-Post: Compute Entrypoint Post-Condition for oit
@@ -117,7 +137,7 @@ pub fn compute_CEP_Post(
   let r1: bool = I_Guar_upper_alarm_tempWstatus(api_upper_alarm_tempWstatus);
 
   // CEP-Guar: guarantee clauses of oit's compute entrypoint
-  let r2: bool = compute_CEP_T_Guar(api_lower_alarm_tempWstatus, api_upper_alarm_tempWstatus);
+  let r2: bool = compute_CEP_T_Guar(api_lower_alarm_tempWstatus, api_lower_desired_tempWstatus, api_upper_alarm_tempWstatus, api_upper_desired_tempWstatus);
 
   return r0 && r1 && r2;
 }

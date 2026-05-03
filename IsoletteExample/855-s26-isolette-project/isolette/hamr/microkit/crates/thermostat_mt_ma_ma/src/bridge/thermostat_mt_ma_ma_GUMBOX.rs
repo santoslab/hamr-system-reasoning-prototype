@@ -62,7 +62,7 @@ pub fn initialize_IEP_Post(
 
 /** Compute Entrypoint Contract
   *
-  * assumes Figure_A_7
+  * assumes Figure_A_7_Weakened
   *   This is not explicitly stated in the requirements, but a reasonable
   *   assumption is that the lower alarm must be at least 1.0f less than
   *   the upper alarm in order to account for the 0.5f tolerance
@@ -70,11 +70,11 @@ pub fn initialize_IEP_Post(
   * @param api_lower_alarm_temp incoming data port
   * @param api_upper_alarm_temp incoming data port
   */
-pub fn compute_spec_Figure_A_7_assume(
+pub fn compute_spec_Figure_A_7_Weakened_assume(
   api_lower_alarm_temp: Isolette_Data_Model::Temp_i,
   api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
 {
-  api_upper_alarm_temp.degrees - api_lower_alarm_temp.degrees >= 1i32
+  api_lower_alarm_temp.degrees <= api_upper_alarm_temp.degrees
 }
 
 /** Compute Entrypoint Contract
@@ -110,7 +110,7 @@ pub fn compute_CEP_T_Assm(
   api_lower_alarm_temp: Isolette_Data_Model::Temp_i,
   api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
 {
-  let r0: bool = compute_spec_Figure_A_7_assume(api_lower_alarm_temp, api_upper_alarm_temp);
+  let r0: bool = compute_spec_Figure_A_7_Weakened_assume(api_lower_alarm_temp, api_upper_alarm_temp);
   let r1: bool = compute_spec_Table_A_12_LowerAlarmTemp_assume(api_lower_alarm_temp);
   let r2: bool = compute_spec_Table_A_12_UpperAlarmTemp_assume(api_upper_alarm_temp);
 

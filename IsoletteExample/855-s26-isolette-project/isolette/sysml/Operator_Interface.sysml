@@ -135,6 +135,13 @@ package Operator_Interface {
           "An integration constraint can only refer to a single port, so need a general requires
           |clause to relate the lower and upper temps":
           GUMBO_Library::GUMBO__Library::Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWstatus);
+
+        // NEW
+        guarantee lower_is_not_higher_than_upper
+          "The lower_tempWStatus should be less than or equal to the upper_tempWStatus if both are valid.
+          |While not listed in the requirements, it is a neccesary condition for the thermostat's regulator" :
+          (lower_desired_tempWstatus.degrees <= upper_desired_tempWstatus.degrees);
+          
     }*/
   }
 }

@@ -56,6 +56,10 @@ verus! {
         //   An integration constraint can only refer to a single port, so need a general requires
         //   clause to relate the lower and upper temps
         GUMBO_Library::Allowed_AlarmTempWStatus_Ranges_spec(api.lower_alarm_tempWstatus, api.upper_alarm_tempWstatus),
+        // guarantee lower_is_not_higher_than_upper
+        //   The lower_tempWStatus should be less than or equal to the upper_tempWStatus if both are valid.
+        //   While not listed in the requirements, it is a neccesary condition for the thermostat's regulator
+        api.lower_desired_tempWstatus.degrees <= api.upper_desired_tempWstatus.degrees,
         // END MARKER TIME TRIGGERED ENSURES
     {
       //log_info("compute entrypoint invoked");

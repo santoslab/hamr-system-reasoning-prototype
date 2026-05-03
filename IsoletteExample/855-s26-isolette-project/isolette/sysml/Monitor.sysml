@@ -178,6 +178,12 @@ package Monitor {
             |in order to relate the lower and uper temps":
             GUMBO_Library::GUMBO__Library::Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWstatus);
 
+        // NEW
+        // added to guarantee the assumption of MA and weakened from original
+        guarantee
+          Figure_A_7_Weakened:
+            lower_alarm_temp.degrees <= upper_alarm_temp.degrees;
+
         compute_cases
           // ===== Monitor Status =====
           case REQ_MMI_1 "If the Manage Monitor Interface mode is INIT,
@@ -410,11 +416,12 @@ package Monitor {
       // ======  C o m p u t e     C o n s t r a i n t s =====
       compute
       
-        assume Figure_A_7 "This is not explicitly stated in the requirements, but a reasonable
+        // NEW AND CHANGED
+        assume Figure_A_7_Weakened "This is not explicitly stated in the requirements, but a reasonable
                   |assumption is that the lower alarm must be at least 1.0f less than
                   |the upper alarm in order to account for the 0.5f tolerance
                   |https://www.faa.gov/sites/faa.gov/files/aircraft/air_cert/design_approvals/air_software/AR-08-32.pdf#page=115 ": 
-          upper_alarm_temp.degrees - lower_alarm_temp.degrees >= 1 [s32];
+          lower_alarm_temp.degrees <= upper_alarm_temp.degrees;
       
         assume Table_A_12_LowerAlarmTemp "Range [96..101]
                           |https://www.faa.gov/sites/faa.gov/files/aircraft/air_cert/design_approvals/air_software/AR-08-32.pdf#page=112 " :

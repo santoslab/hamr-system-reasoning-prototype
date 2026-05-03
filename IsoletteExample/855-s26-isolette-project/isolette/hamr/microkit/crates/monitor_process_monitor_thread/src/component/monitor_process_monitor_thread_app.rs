@@ -1,7 +1,7 @@
 // This file will not be overwritten if HAMR codegen is rerun
 
 use data::{Isolette_Data_Model::On_Off, hamr::SchedState, *};
-use crate::bridge::monitor_process_monitor_thread_api::*;
+use crate::bridge::{monitor_process_monitor_thread_api::*};
 use vstd::prelude::*;
 
 verus! {
@@ -245,7 +245,7 @@ verus! {
           }
         },
         3 => { // Operator Interface
-          if (END_OI_Assert()) {
+          if (END_OI_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus, oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post Operator Interface] END_OI_Assert PASSED");
           } else {
             log_info("[Post Operator Interface] END_OI_Assert FAILED");
@@ -263,33 +263,33 @@ verus! {
             log_info("[Post Operator Interface] Post_TS_OI_Assert FAILED");
           }
 
-          if (START_Regulator_Assert()) {
+          if (START_Regulator_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post Operator Interface] START_Regulator_Assert PASSED");
           } else {
             log_info("[Post Operator Interface] START_Regulator_Assert FAILED");
           }
           
-          if(START_Monitor_Assert()) {
+          if(START_Monitor_Assert(oip_oit_lower_alarm_tempWstatus, oip_oit_upper_alarm_tempWstatus)) {
             log_info("[Post Operator Interface] START_Monitor_Assert PASSED");
           } else {
             log_info("[Post Operator Interface] START_Monitor_Assert FAILED");
           }
         },
         4 => { // Detect Monitor Failure
-          if (START_Regulator_Assert()) {
+          if (START_Regulator_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post DMF] START_Regulator_Assert PASSED");
           } else {
             log_info("[Post DMF] START_Regulator_Assert FAILED");
           }
           
-          if (Post_DMF_Assert()) {
+          if (Post_DMF_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post DMF] Post_DMF_Assert PASSED");
           } else {
             log_info("[Post DMF] Post_DMF_Assert FAILED");
           }
         },
         5 => { // Manage Monitor Interface
-          if (START_Regulator_Assert()) {
+          if (START_Regulator_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post MMI] START_Regulator_Assert PASSED");
           } else {
             log_info("[Post MMI] START_Regulator_Assert FAILED");
@@ -302,7 +302,7 @@ verus! {
           }
         },
         6 => { // Manage Monitor Mode
-          if (START_Regulator_Assert()) {
+          if (START_Regulator_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post MMM] START_Regulator_Assert PASSED");
           } else {
             log_info("[Post MMM] START_Regulator_Assert FAILED");
@@ -315,7 +315,7 @@ verus! {
           }
         },
         7 => { // Manage Alarm
-          if (START_Regulator_Assert()) {
+          if (START_Regulator_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post MA] START_Regulator_Assert PASSED");
           } else {
             log_info("[Post MA] START_Regulator_Assert FAILED");
@@ -328,7 +328,7 @@ verus! {
           }
         },
         8 => { // Detect Regulator Failure
-          if (Post_DRF_Assert()) {
+          if (Post_DRF_Assert(oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus)) {
             log_info("[Post DRF] Post_DRF_Assert PASSED");
           } else {
             log_info("[Post DRF] Post_DRF_Assert FAILED");
@@ -433,8 +433,15 @@ verus! {
   }
 
   #[verifier::external_body]
-  pub fn END_OI_Assert() -> bool {
-    true
+  pub fn END_OI_Assert(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                       upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i,
+                       lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                       upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i
+                      ) -> bool {
+    sysProp_Allowed_LowerAlarmTempWstatus(lower_alarm_tempWstatus)
+    && sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus)
+    && sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
+    && sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus, upper_desired_tempWstatus)
   }
 
   #[verifier::external_body]
@@ -453,13 +460,15 @@ verus! {
   }
 
   #[verifier::external_body]
-  pub fn START_Regulator_Assert() -> bool {
-    true
+  pub fn START_Regulator_Assert(lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+    sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus, upper_desired_tempWstatus)
   }
 
   #[verifier::external_body]
-  pub fn Post_DRF_Assert() -> bool {
-    true
+  pub fn Post_DRF_Assert(lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                         upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+    sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus, upper_desired_tempWstatus)
   }
 
   #[verifier::external_body]
@@ -470,6 +479,7 @@ verus! {
                           interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
     sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
     && sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
+    && sysProp_lower_is_lower_temp(lower_desired_temp, upper_desired_temp)
   }
 
   #[verifier::external_body]
@@ -480,6 +490,7 @@ verus! {
                           interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
     sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
     && sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
+    && sysProp_lower_is_lower_temp(lower_desired_temp, upper_desired_temp)
   }
 
   #[verifier::external_body]
@@ -493,13 +504,19 @@ verus! {
   }
 
   #[verifier::external_body]
-  pub fn START_Monitor_Assert() -> bool {
-    true
+  pub fn START_Monitor_Assert(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                              upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+    sysProp_Allowed_LowerAlarmTempWstatus(lower_alarm_tempWstatus)
+    && sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus)
+    && sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
   }
 
   #[verifier::external_body]
-  pub fn Post_DMF_Assert() -> bool {
-    true
+  pub fn Post_DMF_Assert(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                         upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+    sysProp_Allowed_LowerAlarmTempWstatus(lower_alarm_tempWstatus)
+    && sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus)
+    && sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
   }
 
   #[verifier::external_body]
@@ -510,6 +527,9 @@ verus! {
                             interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
     sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
     && sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
+    && sysProp_Figure_A_7_Weakened(lower_alarm_temp, upper_alarm_temp)
+    && sysProp_Table_A_12_LowerAlarmTemp(lower_alarm_temp)
+    && sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp)
   }
 
   #[verifier::external_body]
@@ -520,6 +540,9 @@ verus! {
                             interface_failure: Isolette_Data_Model::Failure_Flag_i) -> bool {
     sysProp_REQ_MMI_5(lower_alarm_tempWstatus, upper_alarm_tempWstatus, interface_failure)
     && sysProp_REQ_MMI_6(lower_alarm_tempWstatus, upper_alarm_tempWstatus, lower_alarm_temp, upper_alarm_temp, interface_failure)
+    && sysProp_Figure_A_7_Weakened(lower_alarm_temp, upper_alarm_temp)
+    && sysProp_Table_A_12_LowerAlarmTemp(lower_alarm_temp)
+    && sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp)
   }
 
   #[verifier::external_body]
@@ -543,6 +566,24 @@ verus! {
   pub fn END_Assert () -> bool {
     true
   }
+
+  // ===========================  Operator Interface  =======================
+
+    #[verifier::external_body]
+    pub fn sysProp_Allowed_LowerAlarmTempWstatus(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+      GUMBO_Library::Allowed_LowerAlarmTempWStatus(lower_alarm_tempWstatus)
+    }
+
+    #[verifier::external_body]
+    pub fn sysProp_Allowed_UpperAlarmTempWstatus(upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+      GUMBO_Library::Allowed_UpperAlarmTempWStatus(upper_alarm_tempWStatus)
+    }
+
+    #[verifier::external_body]   
+    pub fn sysProp_Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                                    upper_alarm_tempWStatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+      GUMBO_Library::Allowed_AlarmTempWStatus_Ranges(lower_alarm_tempWstatus, upper_alarm_tempWStatus)
+    }
   
   // ===========================  Monitor Properties ========================
 
@@ -572,6 +613,23 @@ verus! {
   }
 
   // ===== Properties Functions =====
+
+  #[verifier::external_body]
+  pub fn sysProp_Table_A_12_LowerAlarmTemp(lower_alarm_temp: Isolette_Data_Model::Temp_i) -> bool{
+    GUMBO_Library::Allowed_LowerAlarmTemp(lower_alarm_temp.degrees)
+  }
+
+  #[verifier::external_body]                
+  pub fn sysProp_Table_A_12_UpperAlarmTemp(upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool {
+    GUMBO_Library::Allowed_UpperAlarmTemp(upper_alarm_temp.degrees)
+  }
+
+  #[verifier::external_body]
+  pub fn sysProp_Figure_A_7_Weakened(lower_alarm_temp: Isolette_Data_Model::Temp_i, 
+                                     upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool {
+    lower_alarm_temp.degrees <= upper_alarm_temp.degrees
+  }
+              
 
   //derived from REQ_MMI_5
   #[verifier::external_body]
@@ -631,7 +689,6 @@ verus! {
 
   // ===========================  Regulator Properties ========================
 
-
   // ===== Helper Functions =====
 
   #[verifier::external_body]
@@ -661,6 +718,19 @@ verus! {
   }
 
   // ===== Properties Functions =====
+
+  #[verifier::external_body]
+  pub fn sysProp_lower_is_not_higher_than_upper(lower_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+                                                upper_desired_tempWstatus: Isolette_Data_Model::TempWstatus_i) -> bool {
+   lower_desired_tempWstatus.degrees <= upper_desired_tempWstatus.degrees
+  }
+
+  #[verifier::external_body]
+  pub fn sysProp_lower_is_lower_temp(lower_desired_temp: Isolette_Data_Model::Temp_i,
+                                     upper_desired_temp: Isolette_Data_Model::Temp_i) -> bool {
+   lower_desired_temp.degrees <= upper_desired_temp.degrees
+  }
+
 
   //derived from REQ_MRI_7
   #[verifier::external_body]
@@ -704,20 +774,6 @@ verus! {
                                     internalFailure: Isolette_Data_Model::Failure_Flag_i,
                                     heat_control: Isolette_Data_Model::On_Off
                                   ) -> bool{
-
-
-                                    /*
-    if (lowerDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
-        && upperDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
-        && currentTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
-        && regulator_mode == Isolette_Data_Model::Regulator_Mode::Normal_Regulator_Mode
-        && currentTempWStatus.degrees < lowerDesiredTempWStatus.degrees) {
-      log_info("[REGULATOR] sysProp_NormalModeHeatOnn PRECONDITION SATISIFIED");
-    } else {
-      log_info("[REGULATOR] sysProp_NormalModeHeatOnn PRECONDITION NOT SATISIFIED");
-    }
-    */
-
     return !(
               lowerDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
               && upperDesiredTempWStatus.status == Isolette_Data_Model::ValueStatus::Valid
@@ -791,34 +847,6 @@ verus! {
       display_temperatureOUT.degrees == currentTempWStatusIN.degrees
     );
   }
-
-  //====================================================================
-  //  Mode Transition Properties
-  //====================================================================
-
-  // Are we allow to use a "sudo-admim-component" that snapshots the enitre state of the system at the start
-
-  /*
-  pub fn sysProp_NormalToNormalMode(Regulator_ModeIN: Isolette_Data_Model::Regulator_Mode,
-                                    lowerDesiredTempWStatus: Isolette_Data_Model::TempWstatus_i,
-                                    upperDesiredTempWStatus: Isolette_Data_Model::TempWstatus_i,
-                                    currentTempWStatus: Isolette_Data_Model::TempWstatus_i,
-                                    internalFailure: Isolette_Data_Model::Failure_Flag_i) -> bool = {
-    val triggerCondition: B = (
-      & inputs_container.mode == Regulator_Mode.Normal_Regulator_Mode)
-
-    val desiredCondition: B = (outputs_container.mode == Regulator_Mode.Normal_Regulator_Mode)
-
-    bookKeep(triggerCondition, desiredCondition)
-
-    return !(
-      !helper_RegulatorErrorCondition(inputs_container)
-    )
-    ||
-    (
-
-    )
-  }*/
 
   #[verifier::external_body]
   pub fn buildUserChannelTables(

@@ -62,6 +62,8 @@ verus! {
         // END MARKER TIME TRIGGERED REQUIRES
       ensures
         // BEGIN MARKER TIME TRIGGERED ENSURES
+        // guarantee Figure_A_7_Weakened
+        api.lower_alarm_temp.degrees <= api.upper_alarm_temp.degrees,
         // case REQ_MMI_1
         //   If the Manage Monitor Interface mode is INIT,
         //   the Monitor Status shall be set to Init.
@@ -207,8 +209,10 @@ verus! {
           api.put_upper_alarm_temp(Temp_i { degrees: upper.degrees } );
       } else {
           // REQ-MMI-7
-          api.put_lower_alarm_temp(Temp_i::default() );
-          api.put_upper_alarm_temp(Temp_i::default() );
+          let d = Temp_i::default();
+
+          api.put_lower_alarm_temp(d);
+          api.put_upper_alarm_temp(d);
       }    
     }
 
