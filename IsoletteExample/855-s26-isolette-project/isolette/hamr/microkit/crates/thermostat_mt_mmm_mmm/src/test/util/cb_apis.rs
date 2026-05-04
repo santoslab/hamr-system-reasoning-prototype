@@ -24,9 +24,10 @@ pub fn testInitializeCB() -> HarnessResult
   // [RetrieveOutState]: retrieve values of the output ports via get operations and GUMBO declared local state variable
   let lastMonitorMode = get_lastMonitorMode();
   let api_monitor_mode = get_monitor_mode();
+  let api_sv_lastMonitorMode = get_sv_lastMonitorMode();
 
   // [CheckPost]: invoke the oracle function
-  if !GUMBOX::initialize_IEP_Post (lastMonitorMode, api_monitor_mode) {
+  if !GUMBOX::initialize_IEP_Post (lastMonitorMode, api_monitor_mode, api_sv_lastMonitorMode) {
     return HarnessResult::FailedPostcondition(
       TestCaseError::Fail("Postcondition failed: incorrect output behavior".into())
     );
@@ -90,9 +91,10 @@ pub fn testComputeCB(
   // [RetrieveOutState]: retrieve values of the output ports via get operations and GUMBO declared local state variable
   let lastMonitorMode = get_lastMonitorMode();
   let api_monitor_mode = get_monitor_mode();
+  let api_sv_lastMonitorMode = get_sv_lastMonitorMode();
 
   // [CheckPost]: invoke the oracle function
-  if !GUMBOX::compute_CEP_Post(In_lastMonitorMode, lastMonitorMode, api_current_tempWstatus, api_interface_failure, api_internal_failure, api_monitor_mode) {
+  if !GUMBOX::compute_CEP_Post(In_lastMonitorMode, lastMonitorMode, api_current_tempWstatus, api_interface_failure, api_internal_failure, api_monitor_mode, api_sv_lastMonitorMode) {
     return HarnessResult::FailedPostcondition(TestCaseError::Fail("Postcondition failed: incorrect output behavior".into()));
   }
 
@@ -170,9 +172,10 @@ pub fn testComputeCBwGSV(
   // [RetrieveOutState]: retrieve values of the output ports via get operations and GUMBO declared local state variable
   let lastMonitorMode = get_lastMonitorMode();
   let api_monitor_mode = get_monitor_mode();
+  let api_sv_lastMonitorMode = get_sv_lastMonitorMode();
 
   // [CheckPost]: invoke the oracle function
-  if !GUMBOX::compute_CEP_Post(In_lastMonitorMode, lastMonitorMode, api_current_tempWstatus, api_interface_failure, api_internal_failure, api_monitor_mode) {
+  if !GUMBOX::compute_CEP_Post(In_lastMonitorMode, lastMonitorMode, api_current_tempWstatus, api_interface_failure, api_internal_failure, api_monitor_mode, api_sv_lastMonitorMode) {
     return HarnessResult::FailedPostcondition(TestCaseError::Fail("Postcondition failed: incorrect output behavior".into()));
   }
 

@@ -454,6 +454,7 @@ package Regulate {
             //  ====== C o m p u t e    E n t r y    P o i n t   Behavior Constraints =====      
             compute
                 // assumption on set points enforced within the Operator Interface
+                // TBD: Could be mode aware
                 assume lower_is_lower_temp: lower_desired_temp.degrees <= upper_desired_temp.degrees;
             
                 // the lastCmd state variable is always equal to the value of the heat_control output port

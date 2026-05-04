@@ -15,6 +15,8 @@ extern "C" {
   fn get_interface_failure(value: *mut Isolette_Data_Model::Failure_Flag_i) -> bool;
   fn get_internal_failure(value: *mut Isolette_Data_Model::Failure_Flag_i) -> bool;
   fn put_monitor_mode(value: *mut Isolette_Data_Model::Monitor_Mode) -> bool;
+  fn put_sv_lastMonitorMode(value: *mut Isolette_Data_Model::Monitor_Mode) -> bool;
+  fn is_monitoring_enabled() -> bool;
 }
 
 pub fn unsafe_get_current_tempWstatus() -> Isolette_Data_Model::TempWstatus_i
@@ -51,6 +53,20 @@ pub fn unsafe_put_monitor_mode(value: &Isolette_Data_Model::Monitor_Mode) -> boo
   }
 }
 
+pub fn unsafe_put_sv_lastMonitorMode(value: &Isolette_Data_Model::Monitor_Mode) -> bool
+{
+  unsafe {
+    return put_sv_lastMonitorMode(value as *const Isolette_Data_Model::Monitor_Mode as *mut Isolette_Data_Model::Monitor_Mode);
+  }
+}
+
+pub fn unsafe_is_monitoring_enabled() -> bool
+{
+  unsafe {
+    return is_monitoring_enabled();
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 // Testing Versions
 //////////////////////////////////////////////////////////////////////////////////
@@ -64,6 +80,8 @@ lazy_static::lazy_static! {
   pub static ref IN_interface_failure: Mutex<Option<Isolette_Data_Model::Failure_Flag_i>> = Mutex::new(None);
   pub static ref IN_internal_failure: Mutex<Option<Isolette_Data_Model::Failure_Flag_i>> = Mutex::new(None);
   pub static ref OUT_monitor_mode: Mutex<Option<Isolette_Data_Model::Monitor_Mode>> = Mutex::new(None);
+  pub static ref OUT_sv_lastMonitorMode: Mutex<Option<Isolette_Data_Model::Monitor_Mode>> = Mutex::new(None);
+  pub static ref MONITORING_ENABLED: Mutex<Option<bool>> = Mutex::new(None);
 }
 
 #[cfg(test)]
@@ -73,6 +91,8 @@ pub fn initialize_test_globals() {
     *IN_interface_failure.lock().unwrap_or_else(|e| e.into_inner()) = None;
     *IN_internal_failure.lock().unwrap_or_else(|e| e.into_inner()) = None;
     *OUT_monitor_mode.lock().unwrap_or_else(|e| e.into_inner()) = None;
+    *OUT_sv_lastMonitorMode.lock().unwrap_or_else(|e| e.into_inner()) = None;
+    *MONITORING_ENABLED.lock().unwrap_or_else(|e| e.into_inner()) = None;
   }
 }
 
@@ -112,5 +132,25 @@ pub fn put_monitor_mode(value: *mut Isolette_Data_Model::Monitor_Mode) -> bool
   unsafe {
     *OUT_monitor_mode.lock().unwrap_or_else(|e| e.into_inner()) = Some(*value);
     return true;
+  }
+}
+
+#[cfg(test)]
+pub fn put_sv_lastMonitorMode(value: *mut Isolette_Data_Model::Monitor_Mode) -> bool
+{
+  unsafe {
+    *OUT_sv_lastMonitorMode.lock().unwrap_or_else(|e| e.into_inner()) = Some(*value);
+    return true;
+  }
+}
+
+#[cfg(test)]
+pub fn is_monitoring_enabled() -> bool
+{
+  unsafe {
+    match *MONITORING_ENABLED.lock().unwrap_or_else(|e| e.into_inner()) {
+      Some(v) => return v,
+      None => return false,
+    }
   }
 }

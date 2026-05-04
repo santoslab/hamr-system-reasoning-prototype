@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 import argparse
 import struct
+import xml.etree.ElementTree as ET
 from random import randint
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
@@ -49,17 +50,105 @@ def schedule(*entries):
     part_ch, part_timeslices, is_user_partition = zip(*entries)
     return UserSchedule(list(part_timeslices), list(part_ch), list(is_user_partition))
 
-# Virtual address at which the schedule state shared memory region is mapped
-# in the scheduler (rw) and in every _MON protection domain (r).
-# Must match SCHED_STATE_VADDR / SCHED_STATE_SIZE in scheduler_config.h.
-SCHED_STATE_VADDR = 0x4_000_000
-SCHED_STATE_SIZE  = 0x1000  # 4 KB
+def add_setvar_vaddr(xml_str, mappings):
+    """
+    Post-process sdf.render() output to add setvar_vaddr attributes.
+    sdfgen v27-29 does not support setvar_vaddr natively.
+    mappings: dict of (pd_name, mr_name) -> var_name
+    """
+    root = ET.fromstring(xml_str)
+    for pd in root.iter('protection_domain'):
+        pd_name = pd.get('name')
+        for m in pd.findall('map'):
+            key = (pd_name, m.get('mr'))
+            if key in mappings:
+                m.set('setvar_vaddr', mappings[key])
+    ET.indent(root, space='  ')
+    return ET.tostring(root, encoding='unicode', xml_declaration=True)
 
-# Virtual address at which the schedule shared memory region is mapped
-# in the scheduler (rw) and in every _MON protection domain (r).
-# Must match SCHED_SCHEDULE_VADDR / SCHED_SCHEDULE_SIZE in scheduler_config.h.
-SCHED_SCHEDULE_VADDR = 0x4_001_000
-SCHED_SCHEDULE_SIZE  = 0x1000  # 4 KB
+setvar_mappings = {
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_upper_desired_temp_1_Memory_Region"): "upper_desired_temp_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_lower_desired_temp_1_Memory_Region"): "lower_desired_temp_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_displayed_temp_1_Memory_Region"): "displayed_temp_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_regulator_status_1_Memory_Region"): "regulator_status_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_interface_failure_1_Memory_Region"): "interface_failure_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region"): "regulator_mode_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region"): "lower_desired_tempWstatus_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_desired_tempWstatus_1_Memory_Region"): "upper_desired_tempWstatus_queue_1",
+    ("thermostat_rt_mri_mri", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "current_tempWstatus_queue_1",
+    ("thermostat_rt_mhs_mhs", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_upper_desired_temp_1_Memory_Region"): "upper_desired_temp_queue_1",
+    ("thermostat_rt_mhs_mhs", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_lower_desired_temp_1_Memory_Region"): "lower_desired_temp_queue_1",
+    ("thermostat_rt_mhs_mhs", "Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region"): "heat_control_queue_1",
+    ("thermostat_rt_mhs_mhs", "Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_sv_lastCmd_1_Memory_Region"): "sv_lastCmd_queue_1",
+    ("thermostat_rt_mhs_mhs", "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region"): "regulator_mode_queue_1",
+    ("thermostat_rt_mhs_mhs", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "current_tempWstatus_queue_1",
+    ("thermostat_rt_mrm_mrm", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_interface_failure_1_Memory_Region"): "interface_failure_queue_1",
+    ("thermostat_rt_mrm_mrm", "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region"): "regulator_mode_queue_1",
+    ("thermostat_rt_mrm_mrm", "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_sv_lastRegulatorMode_1_Memory_Region"): "sv_lastRegulatorMode_queue_1",
+    ("thermostat_rt_mrm_mrm", "Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region"): "internal_failure_queue_1",
+    ("thermostat_rt_mrm_mrm", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "current_tempWstatus_queue_1",
+    ("thermostat_rt_drf_drf", "Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region"): "internal_failure_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region"): "upper_alarm_temp_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_lower_alarm_temp_1_Memory_Region"): "lower_alarm_temp_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region"): "monitor_status_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region"): "interface_failure_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_sv_lastCmd_1_Memory_Region"): "sv_lastCmd_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region"): "monitor_mode_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region"): "lower_alarm_tempWstatus_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region"): "upper_alarm_tempWstatus_queue_1",
+    ("thermostat_mt_mmi_mmi", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "current_tempWstatus_queue_1",
+    ("thermostat_mt_ma_ma", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region"): "upper_alarm_temp_queue_1",
+    ("thermostat_mt_ma_ma", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_lower_alarm_temp_1_Memory_Region"): "lower_alarm_temp_queue_1",
+    ("thermostat_mt_ma_ma", "Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region"): "alarm_control_queue_1",
+    ("thermostat_mt_ma_ma", "Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_sv_lastCmd_1_Memory_Region"): "sv_lastCmd_queue_1",
+    ("thermostat_mt_ma_ma", "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region"): "monitor_mode_queue_1",
+    ("thermostat_mt_ma_ma", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "current_tempWstatus_queue_1",
+    ("thermostat_mt_mmm_mmm", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region"): "interface_failure_queue_1",
+    ("thermostat_mt_mmm_mmm", "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region"): "monitor_mode_queue_1",
+    ("thermostat_mt_mmm_mmm", "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_sv_lastMonitorMode_1_Memory_Region"): "sv_lastMonitorMode_queue_1",
+    ("thermostat_mt_mmm_mmm", "Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region"): "internal_failure_queue_1",
+    ("thermostat_mt_mmm_mmm", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "current_tempWstatus_queue_1",
+    ("thermostat_mt_dmf_dmf", "Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region"): "internal_failure_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_displayed_temp_1_Memory_Region"): "display_temperature_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_regulator_status_1_Memory_Region"): "regulator_status_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region"): "monitor_status_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region"): "alarm_control_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region"): "lower_desired_tempWstatus_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_desired_tempWstatus_1_Memory_Region"): "upper_desired_tempWstatus_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region"): "lower_alarm_tempWstatus_queue_1",
+    ("operator_interface_oip_oit", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region"): "upper_alarm_tempWstatus_queue_1",
+    ("temperature_sensor_cpi_thermostat", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "current_tempWstatus_queue_1",
+    ("temperature_sensor_cpi_thermostat", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_air_1_Memory_Region"): "air_queue_1",
+    ("heat_source_cpi_heat_controller", "Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region"): "heat_control_queue_1",
+    ("heat_source_cpi_heat_controller", "Isolette_Single_Sensor_Instance_heat_source_cpi_heat_controller_heat_out_1_Memory_Region"): "heat_out_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_upper_desired_temp_1_Memory_Region"): "mri_mri_upper_desired_temp_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_lower_desired_temp_1_Memory_Region"): "mri_mri_lower_desired_temp_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_displayed_temp_1_Memory_Region"): "mri_mri_displayed_temp_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_regulator_status_1_Memory_Region"): "mri_mri_regulator_status_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_interface_failure_1_Memory_Region"): "mri_mri_interface_failure_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region"): "mhs_mhs_heat_control_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_sv_lastCmd_1_Memory_Region"): "mhs_mhs_sv_lastCmd_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region"): "mrm_mrm_regulator_mode_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_sv_lastRegulatorMode_1_Memory_Region"): "mrm_mrm_sv_lastRegulatorMode_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region"): "drf_drf_internal_failure_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region"): "mmi_mmi_upper_alarm_temp_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_lower_alarm_temp_1_Memory_Region"): "mmi_mmi_lower_alarm_temp_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region"): "mmi_mmi_monitor_status_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region"): "mmi_mmi_interface_failure_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_sv_lastCmd_1_Memory_Region"): "mmi_mmi_sv_lastCmd_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region"): "ma_ma_alarm_control_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_sv_lastCmd_1_Memory_Region"): "ma_ma_sv_lastCmd_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region"): "mmm_mmm_monitor_mode_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_sv_lastMonitorMode_1_Memory_Region"): "mmm_mmm_sv_lastMonitorMode_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region"): "dmf_dmf_internal_failure_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region"): "oip_oit_lower_desired_tempWstatus_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_desired_tempWstatus_1_Memory_Region"): "oip_oit_upper_desired_tempWstatus_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region"): "oip_oit_lower_alarm_tempWstatus_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region"): "oip_oit_upper_alarm_tempWstatus_queue_1",
+    ("monitor_process_monitor_thread", "Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region"): "cpi_thermostat_current_tempWstatus_queue_1",
+    ("monitor_process_monitor_thread", "sched_state"): "sched_state_queue_1",
+    ("monitor_process_monitor_thread", "sched_schedule"): "sched_schedule_queue_1"
+}
 
 def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
     timer_node = dtb.node(board.timer)
@@ -75,20 +164,26 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
     # Broadcast region written by the scheduler before every dispatch.
     # The runtime monitor maps this region read-only to observe which
     # protection domain last yielded and which will be dispatched next.
+    # Must match SCHED_STATE_VADDR / SCHED_STATE_SIZE in scheduler_config.h.
     #######################################
-    sched_state_mr = MemoryRegion(sdf, "sched_state", SCHED_STATE_SIZE)
-    sdf.add_mr(sched_state_mr)
-    scheduler.add_map(Map(sched_state_mr, SCHED_STATE_VADDR, perms="rw"))
+    SCHED_STATE_VADDR = 0x4_000_000
+    SCHED_STATE_SIZE  = 0x1000  # 4 KB
+    sched_state = MemoryRegion(sdf, "sched_state", SCHED_STATE_SIZE)
+    sdf.add_mr(sched_state)
+    scheduler.add_map(Map(sched_state, SCHED_STATE_VADDR, perms="rw"))
 
     #######################################
     # SCHEDULE
     # The full user_schedule published by the scheduler at init.
     # Monitors that map this region read-only can correlate
     # current_timeslice indices with channel IDs and durations.
+    # Must match SCHED_SCHEDULE_VADDR / SCHED_SCHEDULE_SIZE in scheduler_config.h.
     #######################################
-    sched_schedule_mr = MemoryRegion(sdf, "sched_schedule", SCHED_SCHEDULE_SIZE)
-    sdf.add_mr(sched_schedule_mr)
-    scheduler.add_map(Map(sched_schedule_mr, SCHED_SCHEDULE_VADDR, perms="rw"))
+    SCHED_SCHEDULE_VADDR = 0x4_001_000
+    SCHED_SCHEDULE_SIZE  = 0x1000  # 4 KB
+    sched_schedule = MemoryRegion(sdf, "sched_schedule", SCHED_SCHEDULE_SIZE)
+    sdf.add_mr(sched_schedule)
+    scheduler.add_map(Map(sched_schedule, SCHED_SCHEDULE_VADDR, perms="rw"))
 
     # BEGIN META MARKER
 
@@ -160,8 +255,12 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_rt_mri_mri_interface_failure_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region", 0x1_000)
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region)
+    Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_sv_lastCmd_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_sv_lastCmd_1_Memory_Region", 0x1_000)
+    sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_sv_lastCmd_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region", 0x1_000)
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region)
+    Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_sv_lastRegulatorMode_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_sv_lastRegulatorMode_1_Memory_Region", 0x1_000)
+    sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_sv_lastRegulatorMode_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region", 0x1_000)
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region", 0x1_000)
@@ -172,10 +271,16 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region", 0x1_000)
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region)
+    Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_sv_lastCmd_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_sv_lastCmd_1_Memory_Region", 0x1_000)
+    sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_sv_lastCmd_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region", 0x1_000)
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region)
+    Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_sv_lastCmd_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_sv_lastCmd_1_Memory_Region", 0x1_000)
+    sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_sv_lastCmd_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region", 0x1_000)
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region)
+    Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_sv_lastMonitorMode_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_sv_lastMonitorMode_1_Memory_Region", 0x1_000)
+    sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_sv_lastMonitorMode_1_Memory_Region)
     Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region", 0x1_000)
     sdf.add_mr(Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region)
     Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region = MemoryRegion(sdf, "Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region", 0x1_000)
@@ -211,59 +316,69 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
     thermostat_rt_mhs_mhs.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region, 0x10_002_000, perms="rw"))
     heat_source_cpi_heat_controller.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region, 0x10_000_000, perms="r"))
     monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_heat_control_1_Memory_Region, 0x10_005_000, perms="r"))
+    thermostat_rt_mhs_mhs.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_sv_lastCmd_1_Memory_Region, 0x10_003_000, perms="rw"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mhs_mhs_sv_lastCmd_1_Memory_Region, 0x10_006_000, perms="r"))
     thermostat_rt_mri_mri.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region, 0x10_005_000, perms="r"))
-    thermostat_rt_mhs_mhs.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region, 0x10_003_000, perms="r"))
+    thermostat_rt_mhs_mhs.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region, 0x10_004_000, perms="r"))
     thermostat_rt_mrm_mrm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region, 0x10_001_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region, 0x10_006_000, perms="r"))
-    thermostat_rt_mrm_mrm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region, 0x10_002_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_regulator_mode_1_Memory_Region, 0x10_007_000, perms="r"))
+    thermostat_rt_mrm_mrm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_sv_lastRegulatorMode_1_Memory_Region, 0x10_002_000, perms="rw"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_mrm_mrm_sv_lastRegulatorMode_1_Memory_Region, 0x10_008_000, perms="r"))
+    thermostat_rt_mrm_mrm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region, 0x10_003_000, perms="r"))
     thermostat_rt_drf_drf.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region, 0x10_000_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region, 0x10_007_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_rt_drf_drf_internal_failure_1_Memory_Region, 0x10_009_000, perms="r"))
     thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region, 0x10_000_000, perms="rw"))
     thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region, 0x10_000_000, perms="r"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region, 0x10_008_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_upper_alarm_temp_1_Memory_Region, 0x10_00A_000, perms="r"))
     thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_lower_alarm_temp_1_Memory_Region, 0x10_001_000, perms="rw"))
     thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_lower_alarm_temp_1_Memory_Region, 0x10_001_000, perms="r"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_lower_alarm_temp_1_Memory_Region, 0x10_009_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_lower_alarm_temp_1_Memory_Region, 0x10_00B_000, perms="r"))
     thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region, 0x10_002_000, perms="rw"))
     operator_interface_oip_oit.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region, 0x10_002_000, perms="r"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region, 0x10_00A_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_monitor_status_1_Memory_Region, 0x10_00C_000, perms="r"))
     thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region, 0x10_003_000, perms="rw"))
     thermostat_mt_mmm_mmm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region, 0x10_000_000, perms="r"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region, 0x10_00B_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_interface_failure_1_Memory_Region, 0x10_00D_000, perms="r"))
+    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_sv_lastCmd_1_Memory_Region, 0x10_004_000, perms="rw"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmi_mmi_sv_lastCmd_1_Memory_Region, 0x10_00E_000, perms="r"))
     thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region, 0x10_002_000, perms="rw"))
     operator_interface_oip_oit.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region, 0x10_003_000, perms="r"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region, 0x10_00C_000, perms="r"))
-    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region, 0x10_004_000, perms="r"))
-    thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region, 0x10_003_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_alarm_control_1_Memory_Region, 0x10_00F_000, perms="r"))
+    thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_sv_lastCmd_1_Memory_Region, 0x10_003_000, perms="rw"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_ma_ma_sv_lastCmd_1_Memory_Region, 0x10_010_000, perms="r"))
+    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region, 0x10_005_000, perms="r"))
+    thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region, 0x10_004_000, perms="r"))
     thermostat_mt_mmm_mmm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region, 0x10_001_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region, 0x10_00D_000, perms="r"))
-    thermostat_mt_mmm_mmm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region, 0x10_002_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_monitor_mode_1_Memory_Region, 0x10_011_000, perms="r"))
+    thermostat_mt_mmm_mmm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_sv_lastMonitorMode_1_Memory_Region, 0x10_002_000, perms="rw"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_mmm_mmm_sv_lastMonitorMode_1_Memory_Region, 0x10_012_000, perms="r"))
+    thermostat_mt_mmm_mmm.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region, 0x10_003_000, perms="r"))
     thermostat_mt_dmf_dmf.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region, 0x10_000_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region, 0x10_00E_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_thermostat_mt_dmf_dmf_internal_failure_1_Memory_Region, 0x10_013_000, perms="r"))
     thermostat_rt_mri_mri.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region, 0x10_006_000, perms="r"))
     operator_interface_oip_oit.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region, 0x10_004_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region, 0x10_00F_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_desired_tempWstatus_1_Memory_Region, 0x10_014_000, perms="r"))
     thermostat_rt_mri_mri.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_desired_tempWstatus_1_Memory_Region, 0x10_007_000, perms="r"))
     operator_interface_oip_oit.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_desired_tempWstatus_1_Memory_Region, 0x10_005_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_desired_tempWstatus_1_Memory_Region, 0x10_010_000, perms="r"))
-    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region, 0x10_005_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_desired_tempWstatus_1_Memory_Region, 0x10_015_000, perms="r"))
+    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region, 0x10_006_000, perms="r"))
     operator_interface_oip_oit.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region, 0x10_006_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region, 0x10_011_000, perms="r"))
-    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region, 0x10_006_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_lower_alarm_tempWstatus_1_Memory_Region, 0x10_016_000, perms="r"))
+    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region, 0x10_007_000, perms="r"))
     operator_interface_oip_oit.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region, 0x10_007_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region, 0x10_012_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_operator_interface_oip_oit_upper_alarm_tempWstatus_1_Memory_Region, 0x10_017_000, perms="r"))
     thermostat_rt_mri_mri.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_008_000, perms="r"))
-    thermostat_rt_mhs_mhs.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_004_000, perms="r"))
-    thermostat_rt_mrm_mrm.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_003_000, perms="r"))
-    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_007_000, perms="r"))
-    thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_004_000, perms="r"))
-    thermostat_mt_mmm_mmm.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_003_000, perms="r"))
+    thermostat_rt_mhs_mhs.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_005_000, perms="r"))
+    thermostat_rt_mrm_mrm.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_004_000, perms="r"))
+    thermostat_mt_mmi_mmi.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_008_000, perms="r"))
+    thermostat_mt_ma_ma.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_005_000, perms="r"))
+    thermostat_mt_mmm_mmm.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_004_000, perms="r"))
     temperature_sensor_cpi_thermostat.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_000_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_013_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_current_tempWstatus_1_Memory_Region, 0x10_018_000, perms="r"))
     temperature_sensor_cpi_thermostat.add_map(Map(Isolette_Single_Sensor_Instance_temperature_sensor_cpi_thermostat_air_1_Memory_Region, 0x10_001_000, perms="r"))
     heat_source_cpi_heat_controller.add_map(Map(Isolette_Single_Sensor_Instance_heat_source_cpi_heat_controller_heat_out_1_Memory_Region, 0x10_001_000, perms="rw"))
-    monitor_process_monitor_thread.add_map(Map(sched_state_mr, 0x10_014_000, perms="r"))
-    monitor_process_monitor_thread.add_map(Map(sched_schedule_mr, 0x10_015_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(sched_state, 0x10_019_000, perms="r"))
+    monitor_process_monitor_thread.add_map(Map(sched_schedule, 0x10_01A_000, perms="r"))
 
     #######################################
     # CHANNELS
@@ -364,7 +479,7 @@ def generate(sdf_path: str, output_dir: str, dtb: DeviceTree):
                        data_path)
 
     with open(f"{output_dir}/{sdf_path}", "w+") as f:
-        f.write(sdf.render())
+        f.write(add_setvar_vaddr(sdf.render(), setvar_mappings))
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 # Verification Conditions
 
+For the pruposes of the document st1 and st2 are arbitrary states where st1 is the pre-state of a component transition and st2 is the post-state of a component transition. Values from st1 will be deliniated as old(variable/channel name) and all values from st2 will just be variable/channel name.
+
 ## After Initialization
 
 ### Initial State VC
@@ -7,6 +9,18 @@
 ```
 st satisfies all initialize guarantees
 ⊢ START_Assert st
+```
+
+When exanded the result is
+
+```
+// OI
+I_Guar_lower_alarm_tempWstatus(api_lower_alarm_tempWstatus)
+^ I_Guar_upper_alarm_tempWstatus(api_upper_alarm_tempWstatus)
+
+//
+^
+⊢ True
 ```
 
 ## Before OI and TS
@@ -149,6 +163,16 @@ Post_MRM_Assert st
 ⊢ MHS's Precondition
 ```
 
+When Fully expanded this becomes
+
+```
+// Pre-assertions of MHS
+sysProp_REQ_MRI_7(lower_desired_tempWstatus,  upper_desired_tempWstatus, interface_failure)
+^ sysProp_REQ_MRI_8(lower_desired_tempWstatus, upper_desired_tempWstatus, lower_desired_temp, upper_desired_temp, interface_failure)
+^ sysProp_lower_is_lower_temp(lower_desired_temp, upper_desired_temp)
+⊢ compute_spec_lower_is_lower_temp_assume(lower_desired_temp, upper_desired_temp)
+```
+
 
 #### Next-Assert VC
 
@@ -158,6 +182,38 @@ Post_MRM_Assert st1
 ^ MHS_GlobalWriteFrame st1 st2
 ^ MHS's Postcondition
 ⊢ END_Regulator_Assert st2
+```
+
+When fully exapnded this becomes
+
+```
+// Pre-assertions of MHS (Post_MRM_Assert)
+sysProp_REQ_MRI_7(old(lower_desired_tempWstatus), old(upper_desired_tempWstatus), old(interface_failure))
+^ sysProp_REQ_MRI_8(old(lower_desired_tempWstatus), old(upper_desired_tempWstatus), old(lower_desired_temp), old(upper_desired_temp), old(interface_failure))
+^ sysProp_lower_is_lower_temp(old(lower_desired_temp), old(upper_desired_temp))
+
+// Local Write Frame
+^ MHS_LocalWriteFrame st1 st2 (* Not ceccesary to expand *)
+
+// Global Write Frame
+^ old(lower_desired_tempWstatus) == lower_desired_tempWstatus
+^ old(upper_desired_tempWstatus) == upper_desired_tempWstatus
+^ old(lower_desired_temp) == lower_desired_temp
+^ old(upper_desired_temp) == upper_desired_temp
+^ old(interface_failure) == interface_failure
+^ old(regulator_mode) == regulator_mode
+^ ... (* Truncated global write frame for brevity *)
+
+// Component Post-coniditon (Compute Guarantee)
+^ compute_spec_lastCmd_guarantee(lastCmd, heat_control)
+
+// Component Post-condition (Compute Cases)
+^ REQ_MHS_1(old(regulator_mode), heat_control);
+^ REQ_MHS_2(old(current_tempWstatus), old(lower_desired_temp), old(regulator_mode), heat_control);
+^ REQ_MHS_3(old(current_tempWstatus), old(regulator_mode), old(upper_desired_temp), heat_control);
+^ REQ_MHS_4(old(lastCmd), old(current_tempWstatus), old(lower_desired_temp), old(regulator_mode), old(upper_desired_temp), heat_control);
+^ REQ_MHS_5(old(regulator_mode), heat_control);
+⊢ sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)  
 ```
 
 ## Monitor
@@ -276,5 +332,13 @@ START_HS_Assert st1
 END_Assert
 ⊢ START_Assert
 ```
+
+When expanded the result is
+
+```
+True
+⊢ True
+```
+
 
 

@@ -5,6 +5,21 @@ $(error LIONSOS must be specified)
 endif
 override LIONSOS:=$(abspath ${LIONSOS})
 
+
+# Metaprogram that generates the system description file.
+# Override to use an alternative schedule (e.g. monitor.mk).
+MSD ?= $(TOP_DIR)/meta.py
+
+# Header files containing config structs whose sizes the sdfgen helper
+# needs to calculate. Override to point at a different config header.
+SCHEDULER_CONFIG_HEADERS ?= $(TOP_DIR)/scheduler/include/default.user_config.h
+
+# Scheduler C source file compiled into scheduler.elf.
+# Override to substitute a different scheduler implementation
+# (e.g. one that publishes schedule state for runtime monitoring).
+SCHEDULER_C ?= $(TOP_DIR)/scheduler/src/default.scheduler.c
+
+
 TOOLCHAIN := clang
 CC := clang
 LD := ld.lld
@@ -24,15 +39,10 @@ SUPPORTED_BOARDS := qemu_virt_aarch64
 
 include ${SDDF}/tools/make/board/common.mk
 
-MSD ?= meta.py
-
 SDFGEN_HELPER := $(TOP_DIR)/sdfgen_helper.py
 
 # Macros needed by sdfgen helper to calculate config struct sizes
 SDFGEN_UNKOWN_MACROS := MAX_PARTITIONS=61 MAX_SCHEDULE_SLOTS=128
-
-# Headers containing config structs and dependencies
-SCHEDULER_CONFIG_HEADERS := $(TOP_DIR)/scheduler/include/user_config.h
 
 SDDF_CUSTOM_LIBC := 1
 
@@ -53,15 +63,41 @@ CFLAGS += \
 	-I$(SDDF)/include/microkit \
 	-I$(TOP_DIR)/scheduler/include \
 	-I$(TOP_DIR)/types/include \
-	-I$(TOP_DIR)/components/thermostat_rt_mri_mri/include -I$(TOP_DIR)/components/thermostat_rt_mhs_mhs/include -I$(TOP_DIR)/components/thermostat_rt_mrm_mrm/include -I$(TOP_DIR)/components/thermostat_rt_drf_drf/include -I$(TOP_DIR)/components/thermostat_mt_mmi_mmi/include -I$(TOP_DIR)/components/thermostat_mt_ma_ma/include -I$(TOP_DIR)/components/thermostat_mt_mmm_mmm/include -I$(TOP_DIR)/components/thermostat_mt_dmf_dmf/include -I$(TOP_DIR)/components/operator_interface_oip_oit/include -I$(TOP_DIR)/components/temperature_sensor_cpi_thermostat/include -I$(TOP_DIR)/components/heat_source_cpi_heat_controller/include -I$(TOP_DIR)/components/monitor_process_monitor_thread/include
+	-I$(TOP_DIR)/components/thermostat_rt_mri_mri/include \
+	-I$(TOP_DIR)/components/thermostat_rt_mhs_mhs/include \
+	-I$(TOP_DIR)/components/thermostat_rt_mrm_mrm/include \
+	-I$(TOP_DIR)/components/thermostat_rt_drf_drf/include \
+	-I$(TOP_DIR)/components/thermostat_mt_mmi_mmi/include \
+	-I$(TOP_DIR)/components/thermostat_mt_ma_ma/include \
+	-I$(TOP_DIR)/components/thermostat_mt_mmm_mmm/include \
+	-I$(TOP_DIR)/components/thermostat_mt_dmf_dmf/include \
+	-I$(TOP_DIR)/components/operator_interface_oip_oit/include \
+	-I$(TOP_DIR)/components/temperature_sensor_cpi_thermostat/include \
+	-I$(TOP_DIR)/components/heat_source_cpi_heat_controller/include \
+	-I$(TOP_DIR)/components/monitor_process_monitor_thread/include
 
 
 UTIL_OBJS :=
 
-TYPE_OBJS := sb_queue_Isolette_Data_Model_Temp_i_1.o sb_queue_Isolette_Data_Model_Status_1.o sb_queue_Isolette_Data_Model_Failure_Flag_i_1.o sb_queue_Isolette_Data_Model_On_Off_1.o sb_queue_Isolette_Data_Model_Regulator_Mode_1.o sb_queue_Isolette_Data_Model_Monitor_Mode_1.o sb_queue_Isolette_Data_Model_TempWstatus_i_1.o sb_queue_Isolette_Data_Model_PhysicalTemp_i_1.o sb_queue_Isolette_Environment_Heat_1.o sb_queue_hamr_SchedState_1.o sb_queue_hamr_Schedule_1.o
+TYPE_OBJS := \
+	sb_queue_Isolette_Data_Model_Temp_i_1.o \
+	sb_queue_Isolette_Data_Model_Status_1.o \
+	sb_queue_Isolette_Data_Model_Failure_Flag_i_1.o \
+	sb_queue_Isolette_Data_Model_On_Off_1.o \
+	sb_queue_Isolette_Data_Model_Regulator_Mode_1.o \
+	sb_queue_Isolette_Data_Model_Monitor_Mode_1.o \
+	sb_queue_Isolette_Data_Model_TempWstatus_i_1.o \
+	sb_queue_Isolette_Data_Model_PhysicalTemp_i_1.o \
+	sb_queue_Isolette_Environment_Heat_1.o \
+	sb_queue_hamr_SchedState_1.o \
+	sb_queue_hamr_Schedule_1.o
 
 
 all: cache.o
+
+# Sentinel file whose name encodes a hash of CFLAGS, BOARD, and MICROKIT_CONFIG.
+# When any of those change the old sentinel is removed and a new one is created,
+# which can be used as a prerequisite to force recompilation.
 CHECK_FLAGS_BOARD_MD5:=.board_cflags-$(shell echo -- ${CFLAGS} ${BOARD} ${MICROKIT_CONFIG}| shasum | sed 's/ *-//')
 
 ${CHECK_FLAGS_BOARD_MD5}:
@@ -72,11 +108,45 @@ ${CHECK_FLAGS_BOARD_MD5}:
 vpath %.c $(SDDF) \
 	$(TOP_DIR)/scheduler/src \
 	$(TOP_DIR)/types/src \
-	$(TOP_DIR)/components/thermostat_rt_mri_mri/src $(TOP_DIR)/components/thermostat_rt_mhs_mhs/src $(TOP_DIR)/components/thermostat_rt_mrm_mrm/src $(TOP_DIR)/components/thermostat_rt_drf_drf/src $(TOP_DIR)/components/thermostat_mt_mmi_mmi/src $(TOP_DIR)/components/thermostat_mt_ma_ma/src $(TOP_DIR)/components/thermostat_mt_mmm_mmm/src $(TOP_DIR)/components/thermostat_mt_dmf_dmf/src $(TOP_DIR)/components/operator_interface_oip_oit/src $(TOP_DIR)/components/temperature_sensor_cpi_thermostat/src $(TOP_DIR)/components/heat_source_cpi_heat_controller/src $(TOP_DIR)/components/monitor_process_monitor_thread/src
+	$(TOP_DIR)/components/thermostat_rt_mri_mri/src \
+	$(TOP_DIR)/components/thermostat_rt_mhs_mhs/src \
+	$(TOP_DIR)/components/thermostat_rt_mrm_mrm/src \
+	$(TOP_DIR)/components/thermostat_rt_drf_drf/src \
+	$(TOP_DIR)/components/thermostat_mt_mmi_mmi/src \
+	$(TOP_DIR)/components/thermostat_mt_ma_ma/src \
+	$(TOP_DIR)/components/thermostat_mt_mmm_mmm/src \
+	$(TOP_DIR)/components/thermostat_mt_dmf_dmf/src \
+	$(TOP_DIR)/components/operator_interface_oip_oit/src \
+	$(TOP_DIR)/components/temperature_sensor_cpi_thermostat/src \
+	$(TOP_DIR)/components/heat_source_cpi_heat_controller/src \
+	$(TOP_DIR)/components/monitor_process_monitor_thread/src
 
 
 IMAGES := timer_driver.elf scheduler.elf \
-	thermostat_rt_mri_mri.elf thermostat_rt_mri_mri_MON.elf thermostat_rt_mhs_mhs.elf thermostat_rt_mhs_mhs_MON.elf thermostat_rt_mrm_mrm.elf thermostat_rt_mrm_mrm_MON.elf thermostat_rt_drf_drf.elf thermostat_rt_drf_drf_MON.elf thermostat_mt_mmi_mmi.elf thermostat_mt_mmi_mmi_MON.elf thermostat_mt_ma_ma.elf thermostat_mt_ma_ma_MON.elf thermostat_mt_mmm_mmm.elf thermostat_mt_mmm_mmm_MON.elf thermostat_mt_dmf_dmf.elf thermostat_mt_dmf_dmf_MON.elf operator_interface_oip_oit.elf operator_interface_oip_oit_MON.elf temperature_sensor_cpi_thermostat.elf temperature_sensor_cpi_thermostat_MON.elf heat_source_cpi_heat_controller.elf heat_source_cpi_heat_controller_MON.elf monitor_process_monitor_thread.elf monitor_process_monitor_thread_MON.elf
+	thermostat_rt_mri_mri.elf \
+	thermostat_rt_mri_mri_MON.elf \
+	thermostat_rt_mhs_mhs.elf \
+	thermostat_rt_mhs_mhs_MON.elf \
+	thermostat_rt_mrm_mrm.elf \
+	thermostat_rt_mrm_mrm_MON.elf \
+	thermostat_rt_drf_drf.elf \
+	thermostat_rt_drf_drf_MON.elf \
+	thermostat_mt_mmi_mmi.elf \
+	thermostat_mt_mmi_mmi_MON.elf \
+	thermostat_mt_ma_ma.elf \
+	thermostat_mt_ma_ma_MON.elf \
+	thermostat_mt_mmm_mmm.elf \
+	thermostat_mt_mmm_mmm_MON.elf \
+	thermostat_mt_dmf_dmf.elf \
+	thermostat_mt_dmf_dmf_MON.elf \
+	operator_interface_oip_oit.elf \
+	operator_interface_oip_oit_MON.elf \
+	temperature_sensor_cpi_thermostat.elf \
+	temperature_sensor_cpi_thermostat_MON.elf \
+	heat_source_cpi_heat_controller.elf \
+	heat_source_cpi_heat_controller_MON.elf \
+	monitor_process_monitor_thread.elf \
+	monitor_process_monitor_thread_MON.elf
 
 ${IMAGES}: libsddf_util_debug.a
 
@@ -124,9 +194,12 @@ monitor_process_monitor_thread_rust:
 %.o: %.c ${SDDF}/include
 	${CC} ${CFLAGS} -c -o $@ $<
 
-# explicit target as the included common make rules in sddf/tools/make/board/common.mk
-# do not include TYPE_OBJS
-scheduler.elf: $(UTIL_OBJS) $(TYPE_OBJS) scheduler.o
+SCHEDULER_OBJ := $(notdir $(basename $(SCHEDULER_C))).o
+
+$(SCHEDULER_OBJ): $(SCHEDULER_C) ${SDDF}/include
+	${CC} ${CFLAGS} -c -o $@ $<
+
+scheduler.elf: $(UTIL_OBJS) $(TYPE_OBJS) $(SCHEDULER_OBJ)
 	$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
 
 thermostat_rt_mri_mri_MON.elf: thermostat_rt_mri_mri_MON_user.o thermostat_rt_mri_mri_MON.o
@@ -203,9 +276,9 @@ monitor_process_monitor_thread.elf: $(UTIL_OBJS) $(TYPE_OBJS) monitor_process_mo
 
 
 
-$(SYSTEM_FILE): $(TOP_DIR)/$(MSD) $(IMAGES) $(DTB)
+$(SYSTEM_FILE): $(MSD) $(IMAGES) $(DTB)
 	$(PYTHON) $(SDFGEN_HELPER) --macros "$(SDFGEN_UNKOWN_MACROS)" --configs "$(SCHEDULER_CONFIG_HEADERS)" --output $(TOP_BUILD_DIR)/config_structs.py
-	$(PYTHON) $(TOP_DIR)/$(MSD) --sddf $(SDDF) --board $(MICROKIT_BOARD) --dtb $(DTB) --output . --sdf $(SYSTEM_FILE) --objcopy $(OBJCOPY)
+	$(PYTHON) $(MSD) --sddf $(SDDF) --board $(MICROKIT_BOARD) --dtb $(DTB) --output . --sdf $(SYSTEM_FILE) --objcopy $(OBJCOPY)
 	$(OBJCOPY) --update-section .device_resources=timer_driver_device_resources.data timer_driver.elf
 	$(OBJCOPY) --update-section .timer_client_config=timer_client_scheduler.data scheduler.elf
 
@@ -225,3 +298,39 @@ clean::
 clobber:: clean
 	rm -f *.a
 	rm -f ${IMAGE_FILE} ${REPORT_FILE}
+
+test:: 
+	make -C ${CRATES_DIR}/thermostat_rt_mri_mri test
+	make -C ${CRATES_DIR}/thermostat_rt_mhs_mhs test
+	make -C ${CRATES_DIR}/thermostat_rt_mrm_mrm test
+	make -C ${CRATES_DIR}/thermostat_rt_drf_drf test
+	make -C ${CRATES_DIR}/thermostat_mt_mmi_mmi test
+	make -C ${CRATES_DIR}/thermostat_mt_ma_ma test
+	make -C ${CRATES_DIR}/thermostat_mt_mmm_mmm test
+	make -C ${CRATES_DIR}/thermostat_mt_dmf_dmf test
+	make -C ${CRATES_DIR}/operator_interface_oip_oit test
+	make -C ${CRATES_DIR}/monitor_process_monitor_thread test
+
+clean:: 
+	make -C ${CRATES_DIR}/thermostat_rt_mri_mri clean
+	make -C ${CRATES_DIR}/thermostat_rt_mhs_mhs clean
+	make -C ${CRATES_DIR}/thermostat_rt_mrm_mrm clean
+	make -C ${CRATES_DIR}/thermostat_rt_drf_drf clean
+	make -C ${CRATES_DIR}/thermostat_mt_mmi_mmi clean
+	make -C ${CRATES_DIR}/thermostat_mt_ma_ma clean
+	make -C ${CRATES_DIR}/thermostat_mt_mmm_mmm clean
+	make -C ${CRATES_DIR}/thermostat_mt_dmf_dmf clean
+	make -C ${CRATES_DIR}/operator_interface_oip_oit clean
+	make -C ${CRATES_DIR}/monitor_process_monitor_thread clean
+
+verus: 
+	make -C ${CRATES_DIR}/thermostat_rt_mri_mri verus
+	make -C ${CRATES_DIR}/thermostat_rt_mhs_mhs verus
+	make -C ${CRATES_DIR}/thermostat_rt_mrm_mrm verus
+	make -C ${CRATES_DIR}/thermostat_rt_drf_drf verus
+	make -C ${CRATES_DIR}/thermostat_mt_mmi_mmi verus
+	make -C ${CRATES_DIR}/thermostat_mt_ma_ma verus
+	make -C ${CRATES_DIR}/thermostat_mt_mmm_mmm verus
+	make -C ${CRATES_DIR}/thermostat_mt_dmf_dmf verus
+	make -C ${CRATES_DIR}/operator_interface_oip_oit verus
+	make -C ${CRATES_DIR}/monitor_process_monitor_thread verus

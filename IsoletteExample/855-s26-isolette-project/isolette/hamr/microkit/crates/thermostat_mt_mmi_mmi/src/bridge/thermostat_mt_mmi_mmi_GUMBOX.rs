@@ -53,6 +53,7 @@ pub fn initialize_monitorStatusInitiallyInit(api_monitor_status: Isolette_Data_M
   * @param api_interface_failure outgoing data port
   * @param api_lower_alarm_temp outgoing data port
   * @param api_monitor_status outgoing data port
+  * @param api_sv_lastCmd outgoing data port
   * @param api_upper_alarm_temp outgoing data port
   */
 pub fn initialize_IEP_Guar(
@@ -60,6 +61,7 @@ pub fn initialize_IEP_Guar(
   api_interface_failure: Isolette_Data_Model::Failure_Flag_i,
   api_lower_alarm_temp: Isolette_Data_Model::Temp_i,
   api_monitor_status: Isolette_Data_Model::Status,
+  api_sv_lastCmd: Isolette_Data_Model::On_Off,
   api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
 {
   initialize_monitorStatusInitiallyInit(api_monitor_status)
@@ -71,6 +73,7 @@ pub fn initialize_IEP_Guar(
   * @param api_interface_failure outgoing data port
   * @param api_lower_alarm_temp outgoing data port
   * @param api_monitor_status outgoing data port
+  * @param api_sv_lastCmd outgoing data port
   * @param api_upper_alarm_temp outgoing data port
   */
 pub fn initialize_IEP_Post(
@@ -78,9 +81,10 @@ pub fn initialize_IEP_Post(
   api_interface_failure: Isolette_Data_Model::Failure_Flag_i,
   api_lower_alarm_temp: Isolette_Data_Model::Temp_i,
   api_monitor_status: Isolette_Data_Model::Status,
+  api_sv_lastCmd: Isolette_Data_Model::On_Off,
   api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
 {
-  initialize_IEP_Guar(lastCmd, api_interface_failure, api_lower_alarm_temp, api_monitor_status, api_upper_alarm_temp)
+  initialize_IEP_Guar(lastCmd, api_interface_failure, api_lower_alarm_temp, api_monitor_status, api_sv_lastCmd, api_upper_alarm_temp)
 }
 
 /** Compute Entrypoint Contract
@@ -331,6 +335,7 @@ pub fn compute_CEP_T_Case(
   * @param api_interface_failure outgoing data port
   * @param api_lower_alarm_temp outgoing data port
   * @param api_monitor_status outgoing data port
+  * @param api_sv_lastCmd outgoing data port
   * @param api_upper_alarm_temp outgoing data port
   */
 pub fn compute_CEP_Post(
@@ -343,6 +348,7 @@ pub fn compute_CEP_Post(
   api_interface_failure: Isolette_Data_Model::Failure_Flag_i,
   api_lower_alarm_temp: Isolette_Data_Model::Temp_i,
   api_monitor_status: Isolette_Data_Model::Status,
+  api_sv_lastCmd: Isolette_Data_Model::On_Off,
   api_upper_alarm_temp: Isolette_Data_Model::Temp_i) -> bool
 {
   // CEP-Guar: guarantee clauses of mmi's compute entrypoint

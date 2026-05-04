@@ -14,6 +14,16 @@ verus! {
     // PLACEHOLDER MARKER STATE VARS
   }
 
+  #[repr(C)]
+  #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+  pub struct PreState_thermostat_rt_mhs_mhs {
+    pub In_lastCmd: Isolette_Data_Model::On_Off,
+    pub api_current_tempWstatus: Isolette_Data_Model::TempWstatus_i,
+    pub api_lower_desired_temp: Isolette_Data_Model::Temp_i,
+    pub api_upper_desired_temp: Isolette_Data_Model::Temp_i,
+    pub api_regulator_mode: Isolette_Data_Model::Regulator_Mode,
+  }
+
   impl monitor_process_monitor_thread {
     pub fn new() -> Self
     {
@@ -118,6 +128,7 @@ verus! {
       }
       */
 
+      //channels
       let mri_mri_displayed_temp = api.get_mri_mri_displayed_temp();
       let mri_mri_regulator_status = api.get_mri_mri_regulator_status();
       let mhs_mhs_heat_control = api.get_mhs_mhs_heat_control();
@@ -138,6 +149,8 @@ verus! {
       let mmi_mmi_interface_failure = api.get_mmi_mmi_interface_failure();
       let mmm_mmm_monitor_mode = api.get_mmm_mmm_monitor_mode();
       let dmf_dmf_internal_failure = api.get_dmf_dmf_internal_failure();
+
+      //local variables
       
       /*
         --------------------------------------------------------------
@@ -232,6 +245,7 @@ verus! {
 
       match self.prev_user_ch[idx] {
         2 => { //Temp Sensor
+
           if (END_TS_Assert()) {
             log_info("[Post TEMP SENSOR] END_TS_Assert PASSED");
           } else {
@@ -365,6 +379,16 @@ verus! {
           } else {
             log_info("[Post MRI] END_Monitor_Assert FAILED");
           }
+
+          let pre = PreState_thermostat_rt_mhs_mhs {
+            In_lastCmd: api.get_mhs_mhs_sv_lastCmd(),
+            api_current_tempWstatus: api.get_cpi_thermostat_current_tempWstatus(),
+            api_lower_desired_temp: api.get_mri_mri_lower_desired_temp(),
+            api_upper_desired_temp: api.get_mri_mri_upper_desired_temp(),
+            api_regulator_mode: api.get_mrm_mrm_regulator_mode(),
+          };
+          log::info!("mhs pre state: {:?}", pre);
+
         },
         11 => { // Manage Heat Source
           if (END_Regulator_Assert(mrm_mrm_regulator_mode, cpi_thermostat_current_tempWstatus, oip_oit_lower_desired_tempWstatus, oip_oit_upper_desired_tempWstatus, drf_drf_internal_failure, mhs_mhs_heat_control)) {

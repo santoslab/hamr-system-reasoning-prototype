@@ -6,9 +6,9 @@ void heat_source_cpi_heat_controller_initialize(void);
 void heat_source_cpi_heat_controller_notify(microkit_channel channel);
 void heat_source_cpi_heat_controller_timeTriggered(void);
 
-volatile sb_queue_Isolette_Data_Model_On_Off_1_t *heat_control_queue_1 = (volatile sb_queue_Isolette_Data_Model_On_Off_1_t *) 0x10000000;
+volatile sb_queue_Isolette_Data_Model_On_Off_1_t *heat_control_queue_1;
 sb_queue_Isolette_Data_Model_On_Off_1_Recv_t heat_control_recv_queue;
-volatile sb_queue_Isolette_Environment_Heat_1_t *heat_out_queue_1 = (volatile sb_queue_Isolette_Environment_Heat_1_t *) 0x10001000;
+volatile sb_queue_Isolette_Environment_Heat_1_t *heat_out_queue_1;
 
 #define PORT_FROM_MON 0
 

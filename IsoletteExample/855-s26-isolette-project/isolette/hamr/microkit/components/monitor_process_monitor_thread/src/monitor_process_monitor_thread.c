@@ -6,49 +6,59 @@ void monitor_process_monitor_thread_initialize(void);
 void monitor_process_monitor_thread_notify(microkit_channel channel);
 void monitor_process_monitor_thread_timeTriggered(void);
 
-volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mri_mri_upper_desired_temp_queue_1 = (volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *) 0x10000000;
+volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mri_mri_upper_desired_temp_queue_1;
 sb_queue_Isolette_Data_Model_Temp_i_1_Recv_t mri_mri_upper_desired_temp_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mri_mri_lower_desired_temp_queue_1 = (volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *) 0x10001000;
+volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mri_mri_lower_desired_temp_queue_1;
 sb_queue_Isolette_Data_Model_Temp_i_1_Recv_t mri_mri_lower_desired_temp_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mri_mri_displayed_temp_queue_1 = (volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *) 0x10002000;
+volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mri_mri_displayed_temp_queue_1;
 sb_queue_Isolette_Data_Model_Temp_i_1_Recv_t mri_mri_displayed_temp_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Status_1_t *mri_mri_regulator_status_queue_1 = (volatile sb_queue_Isolette_Data_Model_Status_1_t *) 0x10003000;
+volatile sb_queue_Isolette_Data_Model_Status_1_t *mri_mri_regulator_status_queue_1;
 sb_queue_Isolette_Data_Model_Status_1_Recv_t mri_mri_regulator_status_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *mri_mri_interface_failure_queue_1 = (volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) 0x10004000;
+volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *mri_mri_interface_failure_queue_1;
 sb_queue_Isolette_Data_Model_Failure_Flag_i_1_Recv_t mri_mri_interface_failure_recv_queue;
-volatile sb_queue_Isolette_Data_Model_On_Off_1_t *mhs_mhs_heat_control_queue_1 = (volatile sb_queue_Isolette_Data_Model_On_Off_1_t *) 0x10005000;
+volatile sb_queue_Isolette_Data_Model_On_Off_1_t *mhs_mhs_heat_control_queue_1;
 sb_queue_Isolette_Data_Model_On_Off_1_Recv_t mhs_mhs_heat_control_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Regulator_Mode_1_t *mrm_mrm_regulator_mode_queue_1 = (volatile sb_queue_Isolette_Data_Model_Regulator_Mode_1_t *) 0x10006000;
+volatile sb_queue_Isolette_Data_Model_On_Off_1_t *mhs_mhs_sv_lastCmd_queue_1;
+sb_queue_Isolette_Data_Model_On_Off_1_Recv_t mhs_mhs_sv_lastCmd_recv_queue;
+volatile sb_queue_Isolette_Data_Model_Regulator_Mode_1_t *mrm_mrm_regulator_mode_queue_1;
 sb_queue_Isolette_Data_Model_Regulator_Mode_1_Recv_t mrm_mrm_regulator_mode_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *drf_drf_internal_failure_queue_1 = (volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) 0x10007000;
+volatile sb_queue_Isolette_Data_Model_Regulator_Mode_1_t *mrm_mrm_sv_lastRegulatorMode_queue_1;
+sb_queue_Isolette_Data_Model_Regulator_Mode_1_Recv_t mrm_mrm_sv_lastRegulatorMode_recv_queue;
+volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *drf_drf_internal_failure_queue_1;
 sb_queue_Isolette_Data_Model_Failure_Flag_i_1_Recv_t drf_drf_internal_failure_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mmi_mmi_upper_alarm_temp_queue_1 = (volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *) 0x10008000;
+volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mmi_mmi_upper_alarm_temp_queue_1;
 sb_queue_Isolette_Data_Model_Temp_i_1_Recv_t mmi_mmi_upper_alarm_temp_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mmi_mmi_lower_alarm_temp_queue_1 = (volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *) 0x10009000;
+volatile sb_queue_Isolette_Data_Model_Temp_i_1_t *mmi_mmi_lower_alarm_temp_queue_1;
 sb_queue_Isolette_Data_Model_Temp_i_1_Recv_t mmi_mmi_lower_alarm_temp_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Status_1_t *mmi_mmi_monitor_status_queue_1 = (volatile sb_queue_Isolette_Data_Model_Status_1_t *) 0x1000A000;
+volatile sb_queue_Isolette_Data_Model_Status_1_t *mmi_mmi_monitor_status_queue_1;
 sb_queue_Isolette_Data_Model_Status_1_Recv_t mmi_mmi_monitor_status_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *mmi_mmi_interface_failure_queue_1 = (volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) 0x1000B000;
+volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *mmi_mmi_interface_failure_queue_1;
 sb_queue_Isolette_Data_Model_Failure_Flag_i_1_Recv_t mmi_mmi_interface_failure_recv_queue;
-volatile sb_queue_Isolette_Data_Model_On_Off_1_t *ma_ma_alarm_control_queue_1 = (volatile sb_queue_Isolette_Data_Model_On_Off_1_t *) 0x1000C000;
+volatile sb_queue_Isolette_Data_Model_On_Off_1_t *mmi_mmi_sv_lastCmd_queue_1;
+sb_queue_Isolette_Data_Model_On_Off_1_Recv_t mmi_mmi_sv_lastCmd_recv_queue;
+volatile sb_queue_Isolette_Data_Model_On_Off_1_t *ma_ma_alarm_control_queue_1;
 sb_queue_Isolette_Data_Model_On_Off_1_Recv_t ma_ma_alarm_control_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Monitor_Mode_1_t *mmm_mmm_monitor_mode_queue_1 = (volatile sb_queue_Isolette_Data_Model_Monitor_Mode_1_t *) 0x1000D000;
+volatile sb_queue_Isolette_Data_Model_On_Off_1_t *ma_ma_sv_lastCmd_queue_1;
+sb_queue_Isolette_Data_Model_On_Off_1_Recv_t ma_ma_sv_lastCmd_recv_queue;
+volatile sb_queue_Isolette_Data_Model_Monitor_Mode_1_t *mmm_mmm_monitor_mode_queue_1;
 sb_queue_Isolette_Data_Model_Monitor_Mode_1_Recv_t mmm_mmm_monitor_mode_recv_queue;
-volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *dmf_dmf_internal_failure_queue_1 = (volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) 0x1000E000;
+volatile sb_queue_Isolette_Data_Model_Monitor_Mode_1_t *mmm_mmm_sv_lastMonitorMode_queue_1;
+sb_queue_Isolette_Data_Model_Monitor_Mode_1_Recv_t mmm_mmm_sv_lastMonitorMode_recv_queue;
+volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *dmf_dmf_internal_failure_queue_1;
 sb_queue_Isolette_Data_Model_Failure_Flag_i_1_Recv_t dmf_dmf_internal_failure_recv_queue;
-volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_lower_desired_tempWstatus_queue_1 = (volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *) 0x1000F000;
+volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_lower_desired_tempWstatus_queue_1;
 sb_queue_Isolette_Data_Model_TempWstatus_i_1_Recv_t oip_oit_lower_desired_tempWstatus_recv_queue;
-volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_upper_desired_tempWstatus_queue_1 = (volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *) 0x10010000;
+volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_upper_desired_tempWstatus_queue_1;
 sb_queue_Isolette_Data_Model_TempWstatus_i_1_Recv_t oip_oit_upper_desired_tempWstatus_recv_queue;
-volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_lower_alarm_tempWstatus_queue_1 = (volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *) 0x10011000;
+volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_lower_alarm_tempWstatus_queue_1;
 sb_queue_Isolette_Data_Model_TempWstatus_i_1_Recv_t oip_oit_lower_alarm_tempWstatus_recv_queue;
-volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_upper_alarm_tempWstatus_queue_1 = (volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *) 0x10012000;
+volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *oip_oit_upper_alarm_tempWstatus_queue_1;
 sb_queue_Isolette_Data_Model_TempWstatus_i_1_Recv_t oip_oit_upper_alarm_tempWstatus_recv_queue;
-volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *cpi_thermostat_current_tempWstatus_queue_1 = (volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *) 0x10013000;
+volatile sb_queue_Isolette_Data_Model_TempWstatus_i_1_t *cpi_thermostat_current_tempWstatus_queue_1;
 sb_queue_Isolette_Data_Model_TempWstatus_i_1_Recv_t cpi_thermostat_current_tempWstatus_recv_queue;
-volatile sb_queue_hamr_SchedState_1_t *sched_state_queue_1 = (volatile sb_queue_hamr_SchedState_1_t *) 0x10014000;
+volatile sb_queue_hamr_SchedState_1_t *sched_state_queue_1;
 sb_queue_hamr_SchedState_1_Recv_t sched_state_recv_queue;
-volatile sb_queue_hamr_Schedule_1_t *sched_schedule_queue_1 = (volatile sb_queue_hamr_Schedule_1_t *) 0x10015000;
+volatile sb_queue_hamr_Schedule_1_t *sched_schedule_queue_1;
 sb_queue_hamr_Schedule_1_Recv_t sched_schedule_recv_queue;
 
 #define PORT_FROM_MON 0
@@ -131,6 +141,19 @@ bool get_mhs_mhs_heat_control(Isolette_Data_Model_On_Off *data) {
   return isFresh;
 }
 
+Isolette_Data_Model_On_Off last_mhs_mhs_sv_lastCmd_payload;
+
+bool get_mhs_mhs_sv_lastCmd(Isolette_Data_Model_On_Off *data) {
+  sb_event_counter_t numDropped;
+  Isolette_Data_Model_On_Off fresh_data;
+  bool isFresh = sb_queue_Isolette_Data_Model_On_Off_1_dequeue((sb_queue_Isolette_Data_Model_On_Off_1_Recv_t *) &mhs_mhs_sv_lastCmd_recv_queue, &numDropped, &fresh_data);
+  if (isFresh) {
+    last_mhs_mhs_sv_lastCmd_payload = fresh_data;
+  }
+  *data = last_mhs_mhs_sv_lastCmd_payload;
+  return isFresh;
+}
+
 Isolette_Data_Model_Regulator_Mode last_mrm_mrm_regulator_mode_payload;
 
 bool get_mrm_mrm_regulator_mode(Isolette_Data_Model_Regulator_Mode *data) {
@@ -141,6 +164,19 @@ bool get_mrm_mrm_regulator_mode(Isolette_Data_Model_Regulator_Mode *data) {
     last_mrm_mrm_regulator_mode_payload = fresh_data;
   }
   *data = last_mrm_mrm_regulator_mode_payload;
+  return isFresh;
+}
+
+Isolette_Data_Model_Regulator_Mode last_mrm_mrm_sv_lastRegulatorMode_payload;
+
+bool get_mrm_mrm_sv_lastRegulatorMode(Isolette_Data_Model_Regulator_Mode *data) {
+  sb_event_counter_t numDropped;
+  Isolette_Data_Model_Regulator_Mode fresh_data;
+  bool isFresh = sb_queue_Isolette_Data_Model_Regulator_Mode_1_dequeue((sb_queue_Isolette_Data_Model_Regulator_Mode_1_Recv_t *) &mrm_mrm_sv_lastRegulatorMode_recv_queue, &numDropped, &fresh_data);
+  if (isFresh) {
+    last_mrm_mrm_sv_lastRegulatorMode_payload = fresh_data;
+  }
+  *data = last_mrm_mrm_sv_lastRegulatorMode_payload;
   return isFresh;
 }
 
@@ -209,6 +245,19 @@ bool get_mmi_mmi_interface_failure(Isolette_Data_Model_Failure_Flag_i *data) {
   return isFresh;
 }
 
+Isolette_Data_Model_On_Off last_mmi_mmi_sv_lastCmd_payload;
+
+bool get_mmi_mmi_sv_lastCmd(Isolette_Data_Model_On_Off *data) {
+  sb_event_counter_t numDropped;
+  Isolette_Data_Model_On_Off fresh_data;
+  bool isFresh = sb_queue_Isolette_Data_Model_On_Off_1_dequeue((sb_queue_Isolette_Data_Model_On_Off_1_Recv_t *) &mmi_mmi_sv_lastCmd_recv_queue, &numDropped, &fresh_data);
+  if (isFresh) {
+    last_mmi_mmi_sv_lastCmd_payload = fresh_data;
+  }
+  *data = last_mmi_mmi_sv_lastCmd_payload;
+  return isFresh;
+}
+
 Isolette_Data_Model_On_Off last_ma_ma_alarm_control_payload;
 
 bool get_ma_ma_alarm_control(Isolette_Data_Model_On_Off *data) {
@@ -222,6 +271,19 @@ bool get_ma_ma_alarm_control(Isolette_Data_Model_On_Off *data) {
   return isFresh;
 }
 
+Isolette_Data_Model_On_Off last_ma_ma_sv_lastCmd_payload;
+
+bool get_ma_ma_sv_lastCmd(Isolette_Data_Model_On_Off *data) {
+  sb_event_counter_t numDropped;
+  Isolette_Data_Model_On_Off fresh_data;
+  bool isFresh = sb_queue_Isolette_Data_Model_On_Off_1_dequeue((sb_queue_Isolette_Data_Model_On_Off_1_Recv_t *) &ma_ma_sv_lastCmd_recv_queue, &numDropped, &fresh_data);
+  if (isFresh) {
+    last_ma_ma_sv_lastCmd_payload = fresh_data;
+  }
+  *data = last_ma_ma_sv_lastCmd_payload;
+  return isFresh;
+}
+
 Isolette_Data_Model_Monitor_Mode last_mmm_mmm_monitor_mode_payload;
 
 bool get_mmm_mmm_monitor_mode(Isolette_Data_Model_Monitor_Mode *data) {
@@ -232,6 +294,19 @@ bool get_mmm_mmm_monitor_mode(Isolette_Data_Model_Monitor_Mode *data) {
     last_mmm_mmm_monitor_mode_payload = fresh_data;
   }
   *data = last_mmm_mmm_monitor_mode_payload;
+  return isFresh;
+}
+
+Isolette_Data_Model_Monitor_Mode last_mmm_mmm_sv_lastMonitorMode_payload;
+
+bool get_mmm_mmm_sv_lastMonitorMode(Isolette_Data_Model_Monitor_Mode *data) {
+  sb_event_counter_t numDropped;
+  Isolette_Data_Model_Monitor_Mode fresh_data;
+  bool isFresh = sb_queue_Isolette_Data_Model_Monitor_Mode_1_dequeue((sb_queue_Isolette_Data_Model_Monitor_Mode_1_Recv_t *) &mmm_mmm_sv_lastMonitorMode_recv_queue, &numDropped, &fresh_data);
+  if (isFresh) {
+    last_mmm_mmm_sv_lastMonitorMode_payload = fresh_data;
+  }
+  *data = last_mmm_mmm_sv_lastMonitorMode_payload;
   return isFresh;
 }
 
@@ -354,7 +429,11 @@ void init(void) {
 
   sb_queue_Isolette_Data_Model_On_Off_1_Recv_init(&mhs_mhs_heat_control_recv_queue, (sb_queue_Isolette_Data_Model_On_Off_1_t *) mhs_mhs_heat_control_queue_1);
 
+  sb_queue_Isolette_Data_Model_On_Off_1_Recv_init(&mhs_mhs_sv_lastCmd_recv_queue, (sb_queue_Isolette_Data_Model_On_Off_1_t *) mhs_mhs_sv_lastCmd_queue_1);
+
   sb_queue_Isolette_Data_Model_Regulator_Mode_1_Recv_init(&mrm_mrm_regulator_mode_recv_queue, (sb_queue_Isolette_Data_Model_Regulator_Mode_1_t *) mrm_mrm_regulator_mode_queue_1);
+
+  sb_queue_Isolette_Data_Model_Regulator_Mode_1_Recv_init(&mrm_mrm_sv_lastRegulatorMode_recv_queue, (sb_queue_Isolette_Data_Model_Regulator_Mode_1_t *) mrm_mrm_sv_lastRegulatorMode_queue_1);
 
   sb_queue_Isolette_Data_Model_Failure_Flag_i_1_Recv_init(&drf_drf_internal_failure_recv_queue, (sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) drf_drf_internal_failure_queue_1);
 
@@ -366,9 +445,15 @@ void init(void) {
 
   sb_queue_Isolette_Data_Model_Failure_Flag_i_1_Recv_init(&mmi_mmi_interface_failure_recv_queue, (sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) mmi_mmi_interface_failure_queue_1);
 
+  sb_queue_Isolette_Data_Model_On_Off_1_Recv_init(&mmi_mmi_sv_lastCmd_recv_queue, (sb_queue_Isolette_Data_Model_On_Off_1_t *) mmi_mmi_sv_lastCmd_queue_1);
+
   sb_queue_Isolette_Data_Model_On_Off_1_Recv_init(&ma_ma_alarm_control_recv_queue, (sb_queue_Isolette_Data_Model_On_Off_1_t *) ma_ma_alarm_control_queue_1);
 
+  sb_queue_Isolette_Data_Model_On_Off_1_Recv_init(&ma_ma_sv_lastCmd_recv_queue, (sb_queue_Isolette_Data_Model_On_Off_1_t *) ma_ma_sv_lastCmd_queue_1);
+
   sb_queue_Isolette_Data_Model_Monitor_Mode_1_Recv_init(&mmm_mmm_monitor_mode_recv_queue, (sb_queue_Isolette_Data_Model_Monitor_Mode_1_t *) mmm_mmm_monitor_mode_queue_1);
+
+  sb_queue_Isolette_Data_Model_Monitor_Mode_1_Recv_init(&mmm_mmm_sv_lastMonitorMode_recv_queue, (sb_queue_Isolette_Data_Model_Monitor_Mode_1_t *) mmm_mmm_sv_lastMonitorMode_queue_1);
 
   sb_queue_Isolette_Data_Model_Failure_Flag_i_1_Recv_init(&dmf_dmf_internal_failure_recv_queue, (sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) dmf_dmf_internal_failure_queue_1);
 

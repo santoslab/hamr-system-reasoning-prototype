@@ -6,7 +6,7 @@ void thermostat_rt_drf_drf_initialize(void);
 void thermostat_rt_drf_drf_notify(microkit_channel channel);
 void thermostat_rt_drf_drf_timeTriggered(void);
 
-volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *internal_failure_queue_1 = (volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *) 0x10000000;
+volatile sb_queue_Isolette_Data_Model_Failure_Flag_i_1_t *internal_failure_queue_1;
 
 #define PORT_FROM_MON 0
 

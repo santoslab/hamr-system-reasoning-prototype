@@ -230,6 +230,56 @@ verus! {
     {
       return extern_api::unsafe_get_sched_schedule();
     }
+
+    #[verifier::external_body]
+    fn unverified_get_mhs_mhs_sv_lastCmd(
+      &mut self,
+      value: &Ghost<Isolette_Data_Model::On_Off>) -> (res : Isolette_Data_Model::On_Off)
+      ensures
+        res == value@,
+    {
+      return extern_api::unsafe_get_mhs_mhs_sv_lastCmd();
+    }
+
+    #[verifier::external_body]
+    fn unverified_get_mrm_mrm_sv_lastRegulatorMode(
+      &mut self,
+      value: &Ghost<Isolette_Data_Model::Regulator_Mode>) -> (res : Isolette_Data_Model::Regulator_Mode)
+      ensures
+        res == value@,
+    {
+      return extern_api::unsafe_get_mrm_mrm_sv_lastRegulatorMode();
+    }
+
+    #[verifier::external_body]
+    fn unverified_get_mmi_mmi_sv_lastCmd(
+      &mut self,
+      value: &Ghost<Isolette_Data_Model::On_Off>) -> (res : Isolette_Data_Model::On_Off)
+      ensures
+        res == value@,
+    {
+      return extern_api::unsafe_get_mmi_mmi_sv_lastCmd();
+    }
+
+    #[verifier::external_body]
+    fn unverified_get_ma_ma_sv_lastCmd(
+      &mut self,
+      value: &Ghost<Isolette_Data_Model::On_Off>) -> (res : Isolette_Data_Model::On_Off)
+      ensures
+        res == value@,
+    {
+      return extern_api::unsafe_get_ma_ma_sv_lastCmd();
+    }
+
+    #[verifier::external_body]
+    fn unverified_get_mmm_mmm_sv_lastMonitorMode(
+      &mut self,
+      value: &Ghost<Isolette_Data_Model::Monitor_Mode>) -> (res : Isolette_Data_Model::Monitor_Mode)
+      ensures
+        res == value@,
+    {
+      return extern_api::unsafe_get_mmm_mmm_sv_lastMonitorMode();
+    }
   }
 
   pub trait monitor_process_monitor_thread_Full_Api: monitor_process_monitor_thread_Put_Api + monitor_process_monitor_thread_Get_Api {}
@@ -258,7 +308,12 @@ verus! {
     pub ghost mmm_mmm_monitor_mode: Isolette_Data_Model::Monitor_Mode,
     pub ghost dmf_dmf_internal_failure: Isolette_Data_Model::Failure_Flag_i,
     pub ghost sched_state: hamr::SchedState,
-    pub ghost sched_schedule: hamr::Schedule
+    pub ghost sched_schedule: hamr::Schedule,
+    pub ghost mhs_mhs_sv_lastCmd: Isolette_Data_Model::On_Off,
+    pub ghost mrm_mrm_sv_lastRegulatorMode: Isolette_Data_Model::Regulator_Mode,
+    pub ghost mmi_mmi_sv_lastCmd: Isolette_Data_Model::On_Off,
+    pub ghost ma_ma_sv_lastCmd: Isolette_Data_Model::On_Off,
+    pub ghost mmm_mmm_sv_lastMonitorMode: Isolette_Data_Model::Monitor_Mode
   }
 
   impl<API: monitor_process_monitor_thread_Put_Api> monitor_process_monitor_thread_Application_Api<API> {
@@ -290,6 +345,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mri_mri_displayed_temp(&Ghost(self.mri_mri_displayed_temp))
     }
@@ -318,6 +378,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mri_mri_regulator_status(&Ghost(self.mri_mri_regulator_status))
     }
@@ -346,6 +411,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mhs_mhs_heat_control(&Ghost(self.mhs_mhs_heat_control))
     }
@@ -374,6 +444,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mmi_mmi_monitor_status(&Ghost(self.mmi_mmi_monitor_status))
     }
@@ -402,6 +477,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_ma_ma_alarm_control(&Ghost(self.ma_ma_alarm_control))
     }
@@ -430,6 +510,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_oip_oit_lower_desired_tempWstatus(&Ghost(self.oip_oit_lower_desired_tempWstatus))
     }
@@ -458,6 +543,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_oip_oit_upper_desired_tempWstatus(&Ghost(self.oip_oit_upper_desired_tempWstatus))
     }
@@ -486,6 +576,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_oip_oit_lower_alarm_tempWstatus(&Ghost(self.oip_oit_lower_alarm_tempWstatus))
     }
@@ -514,6 +609,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_oip_oit_upper_alarm_tempWstatus(&Ghost(self.oip_oit_upper_alarm_tempWstatus))
     }
@@ -542,6 +642,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_cpi_thermostat_current_tempWstatus(&Ghost(self.cpi_thermostat_current_tempWstatus))
     }
@@ -570,6 +675,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mri_mri_upper_desired_temp(&Ghost(self.mri_mri_upper_desired_temp))
     }
@@ -598,6 +708,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mri_mri_lower_desired_temp(&Ghost(self.mri_mri_lower_desired_temp))
     }
@@ -626,6 +741,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mri_mri_interface_failure(&Ghost(self.mri_mri_interface_failure))
     }
@@ -654,6 +774,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mrm_mrm_regulator_mode(&Ghost(self.mrm_mrm_regulator_mode))
     }
@@ -682,6 +807,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_drf_drf_internal_failure(&Ghost(self.drf_drf_internal_failure))
     }
@@ -710,6 +840,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mmi_mmi_upper_alarm_temp(&Ghost(self.mmi_mmi_upper_alarm_temp))
     }
@@ -738,6 +873,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mmi_mmi_lower_alarm_temp(&Ghost(self.mmi_mmi_lower_alarm_temp))
     }
@@ -766,6 +906,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mmi_mmi_interface_failure(&Ghost(self.mmi_mmi_interface_failure))
     }
@@ -794,6 +939,11 @@ verus! {
         old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_mmm_mmm_monitor_mode(&Ghost(self.mmm_mmm_monitor_mode))
     }
@@ -822,6 +972,11 @@ verus! {
         res == self.dmf_dmf_internal_failure,
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_dmf_dmf_internal_failure(&Ghost(self.dmf_dmf_internal_failure))
     }
@@ -850,6 +1005,11 @@ verus! {
         old(self).sched_state == self.sched_state,
         res == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_sched_state(&Ghost(self.sched_state))
     }
@@ -878,8 +1038,178 @@ verus! {
         old(self).sched_state == self.sched_state,
         old(self).sched_schedule == self.sched_schedule,
         res == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
     {
       self.api.unverified_get_sched_schedule(&Ghost(self.sched_schedule))
+    }
+    pub fn get_mhs_mhs_sv_lastCmd(&mut self) -> (res : Isolette_Data_Model::On_Off)
+      ensures
+        old(self).mri_mri_displayed_temp == self.mri_mri_displayed_temp,
+        old(self).mri_mri_regulator_status == self.mri_mri_regulator_status,
+        old(self).mhs_mhs_heat_control == self.mhs_mhs_heat_control,
+        old(self).mmi_mmi_monitor_status == self.mmi_mmi_monitor_status,
+        old(self).ma_ma_alarm_control == self.ma_ma_alarm_control,
+        old(self).oip_oit_lower_desired_tempWstatus == self.oip_oit_lower_desired_tempWstatus,
+        old(self).oip_oit_upper_desired_tempWstatus == self.oip_oit_upper_desired_tempWstatus,
+        old(self).oip_oit_lower_alarm_tempWstatus == self.oip_oit_lower_alarm_tempWstatus,
+        old(self).oip_oit_upper_alarm_tempWstatus == self.oip_oit_upper_alarm_tempWstatus,
+        old(self).cpi_thermostat_current_tempWstatus == self.cpi_thermostat_current_tempWstatus,
+        old(self).mri_mri_upper_desired_temp == self.mri_mri_upper_desired_temp,
+        old(self).mri_mri_lower_desired_temp == self.mri_mri_lower_desired_temp,
+        old(self).mri_mri_interface_failure == self.mri_mri_interface_failure,
+        old(self).mrm_mrm_regulator_mode == self.mrm_mrm_regulator_mode,
+        old(self).drf_drf_internal_failure == self.drf_drf_internal_failure,
+        old(self).mmi_mmi_upper_alarm_temp == self.mmi_mmi_upper_alarm_temp,
+        old(self).mmi_mmi_lower_alarm_temp == self.mmi_mmi_lower_alarm_temp,
+        old(self).mmi_mmi_interface_failure == self.mmi_mmi_interface_failure,
+        old(self).mmm_mmm_monitor_mode == self.mmm_mmm_monitor_mode,
+        old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
+        old(self).sched_state == self.sched_state,
+        old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        res == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
+    {
+      self.api.unverified_get_mhs_mhs_sv_lastCmd(&Ghost(self.mhs_mhs_sv_lastCmd))
+    }
+    pub fn get_mrm_mrm_sv_lastRegulatorMode(&mut self) -> (res : Isolette_Data_Model::Regulator_Mode)
+      ensures
+        old(self).mri_mri_displayed_temp == self.mri_mri_displayed_temp,
+        old(self).mri_mri_regulator_status == self.mri_mri_regulator_status,
+        old(self).mhs_mhs_heat_control == self.mhs_mhs_heat_control,
+        old(self).mmi_mmi_monitor_status == self.mmi_mmi_monitor_status,
+        old(self).ma_ma_alarm_control == self.ma_ma_alarm_control,
+        old(self).oip_oit_lower_desired_tempWstatus == self.oip_oit_lower_desired_tempWstatus,
+        old(self).oip_oit_upper_desired_tempWstatus == self.oip_oit_upper_desired_tempWstatus,
+        old(self).oip_oit_lower_alarm_tempWstatus == self.oip_oit_lower_alarm_tempWstatus,
+        old(self).oip_oit_upper_alarm_tempWstatus == self.oip_oit_upper_alarm_tempWstatus,
+        old(self).cpi_thermostat_current_tempWstatus == self.cpi_thermostat_current_tempWstatus,
+        old(self).mri_mri_upper_desired_temp == self.mri_mri_upper_desired_temp,
+        old(self).mri_mri_lower_desired_temp == self.mri_mri_lower_desired_temp,
+        old(self).mri_mri_interface_failure == self.mri_mri_interface_failure,
+        old(self).mrm_mrm_regulator_mode == self.mrm_mrm_regulator_mode,
+        old(self).drf_drf_internal_failure == self.drf_drf_internal_failure,
+        old(self).mmi_mmi_upper_alarm_temp == self.mmi_mmi_upper_alarm_temp,
+        old(self).mmi_mmi_lower_alarm_temp == self.mmi_mmi_lower_alarm_temp,
+        old(self).mmi_mmi_interface_failure == self.mmi_mmi_interface_failure,
+        old(self).mmm_mmm_monitor_mode == self.mmm_mmm_monitor_mode,
+        old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
+        old(self).sched_state == self.sched_state,
+        old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        res == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
+    {
+      self.api.unverified_get_mrm_mrm_sv_lastRegulatorMode(&Ghost(self.mrm_mrm_sv_lastRegulatorMode))
+    }
+    pub fn get_mmi_mmi_sv_lastCmd(&mut self) -> (res : Isolette_Data_Model::On_Off)
+      ensures
+        old(self).mri_mri_displayed_temp == self.mri_mri_displayed_temp,
+        old(self).mri_mri_regulator_status == self.mri_mri_regulator_status,
+        old(self).mhs_mhs_heat_control == self.mhs_mhs_heat_control,
+        old(self).mmi_mmi_monitor_status == self.mmi_mmi_monitor_status,
+        old(self).ma_ma_alarm_control == self.ma_ma_alarm_control,
+        old(self).oip_oit_lower_desired_tempWstatus == self.oip_oit_lower_desired_tempWstatus,
+        old(self).oip_oit_upper_desired_tempWstatus == self.oip_oit_upper_desired_tempWstatus,
+        old(self).oip_oit_lower_alarm_tempWstatus == self.oip_oit_lower_alarm_tempWstatus,
+        old(self).oip_oit_upper_alarm_tempWstatus == self.oip_oit_upper_alarm_tempWstatus,
+        old(self).cpi_thermostat_current_tempWstatus == self.cpi_thermostat_current_tempWstatus,
+        old(self).mri_mri_upper_desired_temp == self.mri_mri_upper_desired_temp,
+        old(self).mri_mri_lower_desired_temp == self.mri_mri_lower_desired_temp,
+        old(self).mri_mri_interface_failure == self.mri_mri_interface_failure,
+        old(self).mrm_mrm_regulator_mode == self.mrm_mrm_regulator_mode,
+        old(self).drf_drf_internal_failure == self.drf_drf_internal_failure,
+        old(self).mmi_mmi_upper_alarm_temp == self.mmi_mmi_upper_alarm_temp,
+        old(self).mmi_mmi_lower_alarm_temp == self.mmi_mmi_lower_alarm_temp,
+        old(self).mmi_mmi_interface_failure == self.mmi_mmi_interface_failure,
+        old(self).mmm_mmm_monitor_mode == self.mmm_mmm_monitor_mode,
+        old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
+        old(self).sched_state == self.sched_state,
+        old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        res == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
+    {
+      self.api.unverified_get_mmi_mmi_sv_lastCmd(&Ghost(self.mmi_mmi_sv_lastCmd))
+    }
+    pub fn get_ma_ma_sv_lastCmd(&mut self) -> (res : Isolette_Data_Model::On_Off)
+      ensures
+        old(self).mri_mri_displayed_temp == self.mri_mri_displayed_temp,
+        old(self).mri_mri_regulator_status == self.mri_mri_regulator_status,
+        old(self).mhs_mhs_heat_control == self.mhs_mhs_heat_control,
+        old(self).mmi_mmi_monitor_status == self.mmi_mmi_monitor_status,
+        old(self).ma_ma_alarm_control == self.ma_ma_alarm_control,
+        old(self).oip_oit_lower_desired_tempWstatus == self.oip_oit_lower_desired_tempWstatus,
+        old(self).oip_oit_upper_desired_tempWstatus == self.oip_oit_upper_desired_tempWstatus,
+        old(self).oip_oit_lower_alarm_tempWstatus == self.oip_oit_lower_alarm_tempWstatus,
+        old(self).oip_oit_upper_alarm_tempWstatus == self.oip_oit_upper_alarm_tempWstatus,
+        old(self).cpi_thermostat_current_tempWstatus == self.cpi_thermostat_current_tempWstatus,
+        old(self).mri_mri_upper_desired_temp == self.mri_mri_upper_desired_temp,
+        old(self).mri_mri_lower_desired_temp == self.mri_mri_lower_desired_temp,
+        old(self).mri_mri_interface_failure == self.mri_mri_interface_failure,
+        old(self).mrm_mrm_regulator_mode == self.mrm_mrm_regulator_mode,
+        old(self).drf_drf_internal_failure == self.drf_drf_internal_failure,
+        old(self).mmi_mmi_upper_alarm_temp == self.mmi_mmi_upper_alarm_temp,
+        old(self).mmi_mmi_lower_alarm_temp == self.mmi_mmi_lower_alarm_temp,
+        old(self).mmi_mmi_interface_failure == self.mmi_mmi_interface_failure,
+        old(self).mmm_mmm_monitor_mode == self.mmm_mmm_monitor_mode,
+        old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
+        old(self).sched_state == self.sched_state,
+        old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        res == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
+    {
+      self.api.unverified_get_ma_ma_sv_lastCmd(&Ghost(self.ma_ma_sv_lastCmd))
+    }
+    pub fn get_mmm_mmm_sv_lastMonitorMode(&mut self) -> (res : Isolette_Data_Model::Monitor_Mode)
+      ensures
+        old(self).mri_mri_displayed_temp == self.mri_mri_displayed_temp,
+        old(self).mri_mri_regulator_status == self.mri_mri_regulator_status,
+        old(self).mhs_mhs_heat_control == self.mhs_mhs_heat_control,
+        old(self).mmi_mmi_monitor_status == self.mmi_mmi_monitor_status,
+        old(self).ma_ma_alarm_control == self.ma_ma_alarm_control,
+        old(self).oip_oit_lower_desired_tempWstatus == self.oip_oit_lower_desired_tempWstatus,
+        old(self).oip_oit_upper_desired_tempWstatus == self.oip_oit_upper_desired_tempWstatus,
+        old(self).oip_oit_lower_alarm_tempWstatus == self.oip_oit_lower_alarm_tempWstatus,
+        old(self).oip_oit_upper_alarm_tempWstatus == self.oip_oit_upper_alarm_tempWstatus,
+        old(self).cpi_thermostat_current_tempWstatus == self.cpi_thermostat_current_tempWstatus,
+        old(self).mri_mri_upper_desired_temp == self.mri_mri_upper_desired_temp,
+        old(self).mri_mri_lower_desired_temp == self.mri_mri_lower_desired_temp,
+        old(self).mri_mri_interface_failure == self.mri_mri_interface_failure,
+        old(self).mrm_mrm_regulator_mode == self.mrm_mrm_regulator_mode,
+        old(self).drf_drf_internal_failure == self.drf_drf_internal_failure,
+        old(self).mmi_mmi_upper_alarm_temp == self.mmi_mmi_upper_alarm_temp,
+        old(self).mmi_mmi_lower_alarm_temp == self.mmi_mmi_lower_alarm_temp,
+        old(self).mmi_mmi_interface_failure == self.mmi_mmi_interface_failure,
+        old(self).mmm_mmm_monitor_mode == self.mmm_mmm_monitor_mode,
+        old(self).dmf_dmf_internal_failure == self.dmf_dmf_internal_failure,
+        old(self).sched_state == self.sched_state,
+        old(self).sched_schedule == self.sched_schedule,
+        old(self).mhs_mhs_sv_lastCmd == self.mhs_mhs_sv_lastCmd,
+        old(self).mrm_mrm_sv_lastRegulatorMode == self.mrm_mrm_sv_lastRegulatorMode,
+        old(self).mmi_mmi_sv_lastCmd == self.mmi_mmi_sv_lastCmd,
+        old(self).ma_ma_sv_lastCmd == self.ma_ma_sv_lastCmd,
+        old(self).mmm_mmm_sv_lastMonitorMode == self.mmm_mmm_sv_lastMonitorMode,
+        res == self.mmm_mmm_sv_lastMonitorMode,
+    {
+      self.api.unverified_get_mmm_mmm_sv_lastMonitorMode(&Ghost(self.mmm_mmm_sv_lastMonitorMode))
     }
   }
 
@@ -912,7 +1242,12 @@ verus! {
       mmm_mmm_monitor_mode: Isolette_Data_Model::Monitor_Mode::Init_Monitor_Mode,
       dmf_dmf_internal_failure: Isolette_Data_Model::Failure_Flag_i { flag: false },
       sched_state: hamr::SchedState { last_yielded_ch: 0, next_dispatch_ch: 0, current_timeslice: 0 },
-      sched_schedule: hamr::Schedule { timeslices: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], timeslice_ch: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], is_user_partition: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false], num_timeslices: 0 }
+      sched_schedule: hamr::Schedule { timeslices: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], timeslice_ch: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], is_user_partition: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false], num_timeslices: 0 },
+      mhs_mhs_sv_lastCmd: Isolette_Data_Model::On_Off::Onn,
+      mrm_mrm_sv_lastRegulatorMode: Isolette_Data_Model::Regulator_Mode::Init_Regulator_Mode,
+      mmi_mmi_sv_lastCmd: Isolette_Data_Model::On_Off::Onn,
+      ma_ma_sv_lastCmd: Isolette_Data_Model::On_Off::Onn,
+      mmm_mmm_sv_lastMonitorMode: Isolette_Data_Model::Monitor_Mode::Init_Monitor_Mode
     }
   }
 
@@ -947,7 +1282,12 @@ verus! {
       mmm_mmm_monitor_mode: Isolette_Data_Model::Monitor_Mode::Init_Monitor_Mode,
       dmf_dmf_internal_failure: Isolette_Data_Model::Failure_Flag_i { flag: false },
       sched_state: hamr::SchedState { last_yielded_ch: 0, next_dispatch_ch: 0, current_timeslice: 0 },
-      sched_schedule: hamr::Schedule { timeslices: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], timeslice_ch: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], is_user_partition: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false], num_timeslices: 0 }
+      sched_schedule: hamr::Schedule { timeslices: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], timeslice_ch: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], is_user_partition: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false], num_timeslices: 0 },
+      mhs_mhs_sv_lastCmd: Isolette_Data_Model::On_Off::Onn,
+      mrm_mrm_sv_lastRegulatorMode: Isolette_Data_Model::Regulator_Mode::Init_Regulator_Mode,
+      mmi_mmi_sv_lastCmd: Isolette_Data_Model::On_Off::Onn,
+      ma_ma_sv_lastCmd: Isolette_Data_Model::On_Off::Onn,
+      mmm_mmm_sv_lastMonitorMode: Isolette_Data_Model::Monitor_Mode::Init_Monitor_Mode
     }
   }
 }

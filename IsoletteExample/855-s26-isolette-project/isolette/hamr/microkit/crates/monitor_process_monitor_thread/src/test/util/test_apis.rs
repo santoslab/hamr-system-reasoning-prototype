@@ -28,7 +28,12 @@ pub struct PreStateContainer {
   pub api_mmm_mmm_monitor_mode: Isolette_Data_Model::Monitor_Mode,
   pub api_dmf_dmf_internal_failure: Isolette_Data_Model::Failure_Flag_i,
   pub api_sched_state: hamr::SchedState,
-  pub api_sched_schedule: hamr::Schedule
+  pub api_sched_schedule: hamr::Schedule,
+  pub api_mhs_mhs_sv_lastCmd: Isolette_Data_Model::On_Off,
+  pub api_mrm_mrm_sv_lastRegulatorMode: Isolette_Data_Model::Regulator_Mode,
+  pub api_mmi_mmi_sv_lastCmd: Isolette_Data_Model::On_Off,
+  pub api_ma_ma_sv_lastCmd: Isolette_Data_Model::On_Off,
+  pub api_mmm_mmm_sv_lastMonitorMode: Isolette_Data_Model::Monitor_Mode
 }
 
 /// setter for component's incoming port values
@@ -56,6 +61,11 @@ pub fn put_concrete_inputs_container(container: PreStateContainer)
   put_dmf_dmf_internal_failure(container.api_dmf_dmf_internal_failure);
   put_sched_state(container.api_sched_state);
   put_sched_schedule(container.api_sched_schedule);
+  put_mhs_mhs_sv_lastCmd(container.api_mhs_mhs_sv_lastCmd);
+  put_mrm_mrm_sv_lastRegulatorMode(container.api_mrm_mrm_sv_lastRegulatorMode);
+  put_mmi_mmi_sv_lastCmd(container.api_mmi_mmi_sv_lastCmd);
+  put_ma_ma_sv_lastCmd(container.api_ma_ma_sv_lastCmd);
+  put_mmm_mmm_sv_lastMonitorMode(container.api_mmm_mmm_sv_lastMonitorMode);
 }
 
 /// setter for component's incoming port values
@@ -81,7 +91,12 @@ pub fn put_concrete_inputs(
   mmm_mmm_monitor_mode: Isolette_Data_Model::Monitor_Mode,
   dmf_dmf_internal_failure: Isolette_Data_Model::Failure_Flag_i,
   sched_state: hamr::SchedState,
-  sched_schedule: hamr::Schedule)
+  sched_schedule: hamr::Schedule,
+  mhs_mhs_sv_lastCmd: Isolette_Data_Model::On_Off,
+  mrm_mrm_sv_lastRegulatorMode: Isolette_Data_Model::Regulator_Mode,
+  mmi_mmi_sv_lastCmd: Isolette_Data_Model::On_Off,
+  ma_ma_sv_lastCmd: Isolette_Data_Model::On_Off,
+  mmm_mmm_sv_lastMonitorMode: Isolette_Data_Model::Monitor_Mode)
 {
   put_mri_mri_displayed_temp(mri_mri_displayed_temp);
   put_mri_mri_regulator_status(mri_mri_regulator_status);
@@ -105,6 +120,11 @@ pub fn put_concrete_inputs(
   put_dmf_dmf_internal_failure(dmf_dmf_internal_failure);
   put_sched_state(sched_state);
   put_sched_schedule(sched_schedule);
+  put_mhs_mhs_sv_lastCmd(mhs_mhs_sv_lastCmd);
+  put_mrm_mrm_sv_lastRegulatorMode(mrm_mrm_sv_lastRegulatorMode);
+  put_mmi_mmi_sv_lastCmd(mmi_mmi_sv_lastCmd);
+  put_ma_ma_sv_lastCmd(ma_ma_sv_lastCmd);
+  put_mmm_mmm_sv_lastMonitorMode(mmm_mmm_sv_lastMonitorMode);
 }
 
 /// setter for IN DataPort
@@ -237,4 +257,34 @@ pub fn put_sched_state(value: hamr::SchedState)
 pub fn put_sched_schedule(value: hamr::Schedule)
 {
   *extern_api::IN_sched_schedule.lock().unwrap_or_else(|e| e.into_inner()) = Some(value)
+}
+
+/// setter for IN DataPort
+pub fn put_mhs_mhs_sv_lastCmd(value: Isolette_Data_Model::On_Off)
+{
+  *extern_api::IN_mhs_mhs_sv_lastCmd.lock().unwrap_or_else(|e| e.into_inner()) = Some(value)
+}
+
+/// setter for IN DataPort
+pub fn put_mrm_mrm_sv_lastRegulatorMode(value: Isolette_Data_Model::Regulator_Mode)
+{
+  *extern_api::IN_mrm_mrm_sv_lastRegulatorMode.lock().unwrap_or_else(|e| e.into_inner()) = Some(value)
+}
+
+/// setter for IN DataPort
+pub fn put_mmi_mmi_sv_lastCmd(value: Isolette_Data_Model::On_Off)
+{
+  *extern_api::IN_mmi_mmi_sv_lastCmd.lock().unwrap_or_else(|e| e.into_inner()) = Some(value)
+}
+
+/// setter for IN DataPort
+pub fn put_ma_ma_sv_lastCmd(value: Isolette_Data_Model::On_Off)
+{
+  *extern_api::IN_ma_ma_sv_lastCmd.lock().unwrap_or_else(|e| e.into_inner()) = Some(value)
+}
+
+/// setter for IN DataPort
+pub fn put_mmm_mmm_sv_lastMonitorMode(value: Isolette_Data_Model::Monitor_Mode)
+{
+  *extern_api::IN_mmm_mmm_sv_lastMonitorMode.lock().unwrap_or_else(|e| e.into_inner()) = Some(value)
 }

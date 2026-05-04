@@ -417,6 +417,7 @@ package Monitor {
       compute
       
         // NEW AND CHANGED
+        // LIST AS TBD
         assume Figure_A_7_Weakened "This is not explicitly stated in the requirements, but a reasonable
                   |assumption is that the lower alarm must be at least 1.0f less than
                   |the upper alarm in order to account for the 0.5f tolerance
