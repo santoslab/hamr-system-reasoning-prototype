@@ -15,11 +15,28 @@ When exanded the result is
 
 ```
 // OI
-I_Guar_lower_alarm_tempWstatus(api_lower_alarm_tempWstatus)
-^ I_Guar_upper_alarm_tempWstatus(api_upper_alarm_tempWstatus)
+I_Guar_lower_alarm_tempWstatus(lower_alarm_tempWstatus)
+^ I_Guar_upper_alarm_tempWstatus(upper_alarm_tempWstatus)
 
-//
-^
+// MRI
+^ initialize_RegulatorStatusIsInitiallyInit(regulator_status)
+
+// MRM
+^ initialize_REQ_MRM_1(api_regulator_mode)
+
+// MHS
+^ initialize_initlastCmd(lastCmd) &&
+^ initialize_REQ_MHS_1(heat_control)
+
+// MMI
+^ initialize_monitorStatusInitiallyInit(monitor_status)
+
+// MMM
+^ initialize_REQ_MMM_1(monitor_mode)
+
+// MA
+^ initialize_REQ_MA_1(lastCmd, alarm_control)
+
 ⊢ True
 ```
 
@@ -163,7 +180,7 @@ Post_MRM_Assert st
 ⊢ MHS's Precondition
 ```
 
-When Fully expanded this becomes
+When fully expanded this becomes
 
 ```
 // Pre-assertions of MHS
@@ -208,11 +225,11 @@ sysProp_REQ_MRI_7(old(lower_desired_tempWstatus), old(upper_desired_tempWstatus)
 ^ compute_spec_lastCmd_guarantee(lastCmd, heat_control)
 
 // Component Post-condition (Compute Cases)
-^ REQ_MHS_1(old(regulator_mode), heat_control);
-^ REQ_MHS_2(old(current_tempWstatus), old(lower_desired_temp), old(regulator_mode), heat_control);
-^ REQ_MHS_3(old(current_tempWstatus), old(regulator_mode), old(upper_desired_temp), heat_control);
-^ REQ_MHS_4(old(lastCmd), old(current_tempWstatus), old(lower_desired_temp), old(regulator_mode), old(upper_desired_temp), heat_control);
-^ REQ_MHS_5(old(regulator_mode), heat_control);
+^ compute_case_REQ_MHS_1(old(regulator_mode), heat_control);
+^ compute_case_REQ_MHS_2(old(current_tempWstatus), old(lower_desired_temp), old(regulator_mode), heat_control);
+^ compute_case_REQ_MHS_3(old(current_tempWstatus), old(regulator_mode), old(upper_desired_temp), heat_control);
+^ compute_case_REQ_MHS_4(old(lastCmd), old(current_tempWstatus), old(lower_desired_temp), old(regulator_mode), old(upper_desired_temp), heat_control);
+^ compute_case_REQ_MHS_5(old(regulator_mode), heat_control);
 ⊢ sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)  
 ```
 
