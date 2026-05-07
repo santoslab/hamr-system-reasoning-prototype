@@ -346,8 +346,8 @@ START_HS_Assert st1
 ### Post-Pre VC
 
 ```
-END_Assert
-⊢ START_Assert
+END_Assert st
+⊢ START_Assert st
 ```
 
 When expanded the result is
