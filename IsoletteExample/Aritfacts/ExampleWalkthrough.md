@@ -1059,6 +1059,8 @@ These VCs are discharged automatically using SMT-based tooling.
 
 The framework generates several classes of VCs.
 
+The full list of generated VCs can be found [here](https://github.com/santoslab/hamr-system-reasoning-prototype/blob/main/IsoletteExample/Aritfacts/VCs.md).
+
 ---
 ## Init-State VC
 
