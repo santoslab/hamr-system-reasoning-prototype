@@ -1279,8 +1279,8 @@ This VC verifies that the assertion that can be made at the start of a schedule 
 ### Example
 
 ```
-END_Assert
-⊢ START_Assert
+END_Assert st
+⊢ START_Assert st
 ```
 
 When exapnded the VC becomes
