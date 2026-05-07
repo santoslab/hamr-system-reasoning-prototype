@@ -1226,7 +1226,7 @@ The Next-Assert VC for the MHS component is
 Post_MRM_Assert st1
 ^ MHS_LocalWriteFrame st1 st2
 ^ MHS_GlobalWriteFrame st1 st2
-^ MHS's Postcondition
+^ st1 and st2 together satisfy MHS's Postcondition
 ⊢ END_Regulator_Assert st2
 ```
 
