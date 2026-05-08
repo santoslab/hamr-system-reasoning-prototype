@@ -1223,11 +1223,11 @@ This VC is the primary mechanism by which assertions are propagated forward thro
 The Next-Assert VC for the MHS component is
 
 ```
-Post_MRM_Assert st1
-^ MHS_LocalWriteFrame st1 st2
-^ MHS_GlobalWriteFrame st1 st2
-^ st1 and st2 together satisfy MHS's Postcondition
-⊢ END_Regulator_Assert st2
+Post_MRM_Assert pre_st
+^ MHS_LocalWriteFrame pre_st post_st
+^ MHS_GlobalWriteFrame pre_st post_st
+^ pre_st and post_st together satisfy MHS's Postcondition
+⊢ END_Regulator_Assert post_st
 ```
 
 When expanded this VC becomes
@@ -1239,7 +1239,7 @@ sysProp_REQ_MRI_7(old(lower_desired_tempWstatus), old(upper_desired_tempWstatus)
 ^ sysProp_lower_is_lower_temp(old(lower_desired_temp), old(upper_desired_temp))
 
 // Local Write Frame
-^ MHS_LocalWriteFrame st1 st2 (* Not ceccesary to expand *)
+^ MHS_LocalWriteFrame pre_st post_st (* Not ceccesary to expand *)
 
 // Global Write Frame
 ^ old(lower_desired_tempWstatus) == lower_desired_tempWstatus
@@ -1261,6 +1261,9 @@ sysProp_REQ_MRI_7(old(lower_desired_tempWstatus), old(upper_desired_tempWstatus)
 ^ compute_case_REQ_MHS_5(old(regulator_mode), heat_control);
 ⊢ sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)  
 ```
+
+**Note**: Values marked by old() are from the pre-state of a component's execution; otherwise, they are from the post-state.
+
 
 ---
 

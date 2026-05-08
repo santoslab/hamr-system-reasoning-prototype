@@ -1,6 +1,6 @@
 # Verification Conditions
 
-For the pruposes of the document st1 and st2 are arbitrary states where st1 is the pre-state of a component transition and st2 is the post-state of a component transition. Values from st1 will be deliniated as old(variable/channel name) and all values from st2 will just be variable/channel name.
+For the pruposes of the document st, st1, and st2 are arbitrary states where st1 is the pre-state of a component's execution and st2 is the post-state. Values from st1 will be deliniated as `old(variable/channel name)` and all values from st2 will just be `variable/channel name`.
 
 ## After Initialization
 
