@@ -1262,7 +1262,7 @@ sysProp_REQ_MRI_7(old(lower_desired_tempWstatus), old(upper_desired_tempWstatus)
 ⊢ sysProp_NormalModeHeatOnn(regulator_mode, currentTempWStatus, lowerDesiredTempWStatus, upperDesiredTempWStatus, internalFailure, heat_control)  
 ```
 
-**Note**: Values marked by old() are from the pre-state of a component's execution; otherwise, they are from the post-state.
+**Note**: Values marked by `old()` are from the pre-state of a component's execution; otherwise, they are from the post-state.
 
 
 ---
